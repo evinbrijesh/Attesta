@@ -103,5 +103,6 @@ The standalone `attesta-verify` CLI (`packages/verify-coc`) checks:
 | `POST` | `/api/assets/{asset_id}/handoff` | Append `Ed25519`-signed custody handoff | Implemented |
 | `GET` | `/api/assets/{asset_id}/verify` | Full chain & disk integrity check | Implemented |
 | `GET` | `/api/assets/{asset_id}/bundle` | Export verified `.zip` bundle | Implemented |
-| `POST` | `/api/assets/{asset_id}/audit` | Run AI log parser, anomaly audit & Part A/B draft | Planned (Day 4) |
-| `POST` | `/api/assets/{asset_id}/sign-s63` | Human expert sign-off & Section 63(4) PDF generation | Planned (Day 5) |
+| `GET` | `/api/assets/{asset_id}/forensics` | EXIF metadata & TRACE advisory flags (`advisory_only: true`) | Implemented |
+| `POST` | `/api/assets/{asset_id}/audit` | Run AI log parser, anomaly audit & Part A/B draft | Planned (Day 5–6) |
+| `POST` | `/api/assets/{asset_id}/sign-s63` | Human expert sign-off & Section 63(4) PDF generation | Planned (Day 7) |

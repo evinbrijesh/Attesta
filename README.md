@@ -38,9 +38,11 @@ Today, advocates, police cyber cells, and forensic labs prepare these manually i
 ```text
 attesta/
 ├── apps/
-│   └── api/             # FastAPI backend: crypto, append-only SQLite ledger, bundle export, tests
+│   └── api/             # FastAPI backend: crypto, append-only SQLite ledger, forensics, bundle export, tests
 ├── packages/
 │   └── verify-coc/      # Standalone offline CLI verifier (`attesta-verify`)
+├── fixtures/
+│   └── logs/            # 5 synthetic forensic log formats (dd, ewfacquire, Autopsy, ExifTool, officer notes)
 ├── docs/                # PRD, Architecture, and Roadmap
 └── .env.example
 ```
@@ -50,7 +52,7 @@ attesta/
 ## Quickstart & Verification
 
 ```bash
-# 1. Run Backend API & Core Tests (20/20 passing, incl. 100 single-byte-flip tamper tests)
+# 1. Run Backend API & Core Tests (25/25 passing, incl. 100 byte-flip tamper & forensics tests)
 cd apps/api
 uv sync
 uv run pytest -v
