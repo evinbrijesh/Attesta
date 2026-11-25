@@ -7,6 +7,7 @@ import sqlite3
 from pathlib import Path
 
 from fastapi import Depends, FastAPI, File, Form, HTTPException, UploadFile
+from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse
 from pydantic import BaseModel, Field
 
@@ -46,6 +47,13 @@ def create_app(db_path: Path | None = None, storage_dir: Path | None = None) -> 
     resolved_bundles = resolved_storage.parent / "bundles"
 
     app = FastAPI(title="Attesta API", version="0.1.0")
+    app.add_middleware(
+        CORSMiddleware,
+        allow_origins=["*"],
+        allow_credentials=True,
+        allow_methods=["*"],
+        allow_headers=["*"],
+    )
     conn = get_connection(resolved_db)
 
     def get_db() -> sqlite3.Connection:
@@ -55,9 +63,30 @@ def create_app(db_path: Path | None = None, storage_dir: Path | None = None) -> 
     def health() -> dict[str, str]:
         return {"status": "ok", "service": "attesta-api"}
 
+    @app.get("/api/cases")
+    def api_list_cases(db: sqlite3.Connection = Depends(get_db)) -> list[dict[str, object]]:
+        rows = db.execute("SELECT case_id, title, description, created_at FROM cases ORDER BY created_at DESC").fetchall()
+        return [dict(r) for r in rows]
+
     @app.post("/api/cases", status_code=201)
     def api_create_case(body: CaseCreateRequest, db: sqlite3.Connection = Depends(get_db)) -> dict[str, str]:
         return create_case(db, title=body.title, description=body.description)
+
+    @app.get("/api/cases/{case_id}/assets")
+    def api_list_assets(case_id: str, db: sqlite3.Connection = Depends(get_db)) -> list[dict[str, object]]:
+        rows = db.execute(
+            "SELECT asset_id, case_id, filename, media_type, sha256, blake3, size_bytes, ingested_at FROM evidence_assets WHERE case_id = ? ORDER BY ingested_at DESC",
+            (case_id,),
+        ).fetchall()
+        return [dict(r) for r in rows]
+
+    @app.get("/api/assets/{asset_id}/events")
+    def api_list_events(asset_id: str, db: sqlite3.Connection = Depends(get_db)) -> list[dict[str, object]]:
+        rows = db.execute(
+            "SELECT event_id, case_id, asset_id, seq, event_type, actor_from, actor_to, purpose, location, occurred_at_utc, prev_hash, event_hash, signer_public_key, signature, notes FROM custody_events WHERE asset_id = ? ORDER BY seq ASC",
+            (asset_id,),
+        ).fetchall()
+        return [dict(r) for r in rows]
 
     @app.post("/api/cases/{case_id}/ingest")
     async def api_ingest(

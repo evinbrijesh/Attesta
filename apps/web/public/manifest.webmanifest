@@ -1,0 +1,9 @@
+{
+  "name": "Attesta — Section 63 Evidence Pipeline",
+  "short_name": "Attesta",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#09090b",
+  "theme_color": "#09090b",
+  "description": "Tamper-evident chain-of-custody & BSA Section 63(4) electronic evidence pipeline."
+}
