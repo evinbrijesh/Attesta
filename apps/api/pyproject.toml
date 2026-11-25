@@ -1,0 +1,23 @@
+[project]
+name = "attesta-api"
+version = "0.1.0"
+description = "Attesta backend API — tamper-evident chain-of-custody & BSA Section 63(4) pipeline"
+requires-python = ">=3.11"
+dependencies = [
+    "blake3>=1.0.0",
+    "cryptography>=44.0.0",
+    "fastapi>=0.115.0",
+    "pydantic>=2.10.0",
+    "python-multipart>=0.0.20",
+    "uvicorn>=0.34.0",
+]
+
+[dependency-groups]
+dev = [
+    "httpx>=0.28.0",
+    "pytest>=8.3.0",
+]
+
+[tool.pytest.ini_options]
+pythonpath = ["."]
+testpaths = ["tests"]
