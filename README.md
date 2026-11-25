@@ -8,11 +8,11 @@
 
 ## Why Attesta?
 
-Under India's **Bharatiya Sakshya Adhiniyam (BSA), Section 63(4)** (upheld by the Supreme Court in *Pune Bar Association v. Union of India*, May 2026), electronic evidence submitted in court requires a mandatory two-part certificate:
-- **Part A (Custodian's Declaration):** Discloses the file's cryptographic **hash value** and origin.
+Under India's **Bharatiya Sakshya Adhiniyam (BSA), Section 63(4)** (effective 1 July 2024, upheld by the Supreme Court in *Pune Bar Association v. Union of India*, May 2026), electronic evidence submitted in court requires a mandatory two-part statutory certificate:
+- **Part A (Custodian's Declaration):** Discloses the file's origin and cryptographic **hash value**.
 - **Part B (Expert's Certification):** Certifies technical integrity and custody continuity.
 
-Today, lawyers, cyber cells, and forensic labs prepare these manually in Word/Excel—leading to missing hashes, timezone mismatches, broken custody chains, and inadmissible evidence.
+Today, advocates, police cyber cells, and forensic labs prepare these manually in Word/Excel—leading to missing hashes, timezone conflicts, broken custody chains, and excluded evidence.
 
 **Attesta** automates this end-to-end while keeping cryptography strictly deterministic:
 1. **Deterministic Intake & Hashing:** Computes `SHA-256` + `BLAKE3` at intake (idempotent by content hash).
@@ -25,6 +25,14 @@ Today, lawyers, cyber cells, and forensic labs prepare these manually in Word/Ex
 
 ---
 
+## Documentation
+
+- [Product Requirements Document (PRD)](docs/PRD.md) — Problem statement, dual-mode UX (`📱 Field Mobile` ⇄ `🖥️ Expert Desktop`), sponsor integrations, and evaluation benchmarks.
+- [Technical Architecture](docs/ARCHITECTURE.md) — Cryptographic model, append-only SQLite triggers, `attesta-bundle-v1` format, and API endpoints.
+- [Roadmap](docs/ROADMAP.md) — 10-day Hackathon Sprint (Nov 26 – Dec 6, 2026) and post-hackathon production roadmap.
+
+---
+
 ## Repository Structure
 
 ```text
@@ -33,15 +41,16 @@ attesta/
 │   └── api/             # FastAPI backend: crypto, append-only SQLite ledger, bundle export, tests
 ├── packages/
 │   └── verify-coc/      # Standalone offline CLI verifier (`attesta-verify`)
+├── docs/                # PRD, Architecture, and Roadmap
 └── .env.example
 ```
 
 ---
 
-## Quickstart (Day 1 Core)
+## Quickstart & Verification
 
 ```bash
-# 1. Run Backend API & Tests
+# 1. Run Backend API & Core Tests (20/20 passing, incl. 100 single-byte-flip tamper tests)
 cd apps/api
 uv sync
 uv run pytest -v
