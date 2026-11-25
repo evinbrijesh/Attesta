@@ -38,7 +38,8 @@ Today, advocates, police cyber cells, and forensic labs prepare these manually i
 ```text
 attesta/
 ├── apps/
-│   └── api/             # FastAPI backend: crypto, append-only SQLite ledger, forensics, bundle export, tests
+│   ├── api/             # FastAPI backend: crypto, SQLite ledger, forensics, AI agent, S.63 PDF, tests
+│   └── web/             # React + Vite + Tailwind PWA (📱 Field Mobile ⇄ 🖥️ Expert Desktop)
 ├── packages/
 │   └── verify-coc/      # Standalone offline CLI verifier (`attesta-verify`)
 ├── fixtures/
@@ -52,7 +53,7 @@ attesta/
 ## Quickstart & Verification
 
 ```bash
-# 1. Run Backend API & Core Tests (25/25 passing, incl. 100 byte-flip tamper & forensics tests)
+# 1. Run Backend API & Core Tests (30/30 passing)
 cd apps/api
 uv sync
 uv run pytest -v
@@ -60,8 +61,13 @@ uv run pytest -v
 # 2. Start API Server
 uv run uvicorn app.main:app --reload   # http://localhost:8000/api/health
 
-# 3. Verify an Exported Bundle Offline
-cd ../../packages/verify-coc
+# 3. Start Adaptive Mobile + Desktop PWA (in a second terminal)
+cd apps/web
+npm install
+npm run dev                            # http://localhost:5173
+
+# 4. Verify an Exported Bundle Offline
+cd packages/verify-coc
 uv sync
 uv run attesta-verify path/to/bundle.zip
 ```

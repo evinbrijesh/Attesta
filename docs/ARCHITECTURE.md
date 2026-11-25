@@ -98,11 +98,16 @@ The standalone `attesta-verify` CLI (`packages/verify-coc`) checks:
 | Method | Path | Purpose | Status |
 |---|---|---|---|
 | `GET` | `/api/health` | Liveness check | Implemented |
+| `GET` | `/api/cases` | List all cases | Implemented |
 | `POST` | `/api/cases` | Create a new case | Implemented |
+| `GET` | `/api/cases/{case_id}/assets` | List sealed evidence assets for a case | Implemented |
 | `POST` | `/api/cases/{case_id}/ingest` | Idempotent evidence upload + `INGEST` event | Implemented |
+| `GET` | `/api/assets/{asset_id}/events` | List ordered hash-chained custody events | Implemented |
 | `POST` | `/api/assets/{asset_id}/handoff` | Append `Ed25519`-signed custody handoff | Implemented |
 | `GET` | `/api/assets/{asset_id}/verify` | Full chain & disk integrity check | Implemented |
-| `GET` | `/api/assets/{asset_id}/bundle` | Export verified `.zip` bundle | Implemented |
+| `GET` | `/api/assets/{asset_id}/bundle` | Export verified `.zip` bundle (embeds signed PDF) | Implemented |
 | `GET` | `/api/assets/{asset_id}/forensics` | EXIF metadata & TRACE advisory flags (`advisory_only: true`) | Implemented |
-| `POST` | `/api/assets/{asset_id}/audit` | Run AI log parser, anomaly audit & Part A/B draft | Planned (Day 5–6) |
-| `POST` | `/api/assets/{asset_id}/sign-s63` | Human expert sign-off & Section 63(4) PDF generation | Planned (Day 7) |
+| `POST` | `/api/assets/{asset_id}/audit` | Run AI log parser, anomaly audit & Part A/B draft (+ n8n) | Implemented |
+| `GET` | `/api/legal/section63` | BSA Section 63(4) reference (Olostep live + local cache) | Implemented |
+| `POST` | `/api/assets/{asset_id}/sign-s63` | Human expert sign-off & Section 63(4) PDF generation | Implemented |
+| `GET` | `/api/assets/{asset_id}/certificate.pdf` | Download signed Section 63(4) Part A + B PDF | Implemented |
