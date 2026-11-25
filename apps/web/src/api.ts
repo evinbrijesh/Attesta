@@ -146,5 +146,30 @@ export const api = {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ log_text: logText, notify_n8n: notifyN8n }),
     }),
+  signSection63: (
+    assetId: string,
+    payload: {
+      custodian_name: string
+      custodian_designation: string
+      expert_name: string
+      expert_designation: string
+      part_a_text: string
+      part_b_text: string
+      notify_n8n: boolean
+    },
+  ) =>
+    req<{
+      cert_id: string
+      asset_id: string
+      signed_at_utc: string
+      pdf_sha256: string
+      head_event_hash: string
+      n8n_notification: { delivered: boolean } | null
+    }>(`/api/assets/${assetId}/sign-s63`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload),
+    }),
+  certificatePdfUrl: (assetId: string) => `/api/assets/${assetId}/certificate.pdf`,
   bundleUrl: (assetId: string) => `/api/assets/${assetId}/bundle`,
 }

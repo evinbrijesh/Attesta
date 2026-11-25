@@ -59,6 +59,24 @@ BEFORE DELETE ON custody_events
 BEGIN
     SELECT RAISE(ABORT, 'custody_events is append-only: DELETE forbidden');
 END;
+
+CREATE TABLE IF NOT EXISTS section63_certificates (
+    cert_id TEXT PRIMARY KEY,
+    asset_id TEXT NOT NULL REFERENCES evidence_assets(asset_id),
+    case_id TEXT NOT NULL REFERENCES cases(case_id),
+    custodian_name TEXT NOT NULL,
+    custodian_designation TEXT NOT NULL,
+    expert_name TEXT NOT NULL,
+    expert_designation TEXT NOT NULL,
+    part_a_text TEXT NOT NULL,
+    part_b_text TEXT NOT NULL,
+    sha256 TEXT NOT NULL,
+    blake3 TEXT NOT NULL,
+    head_event_hash TEXT NOT NULL,
+    signed_at_utc TEXT NOT NULL,
+    pdf_path TEXT NOT NULL,
+    pdf_sha256 TEXT NOT NULL
+);
 """
 
 

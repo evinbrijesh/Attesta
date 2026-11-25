@@ -373,6 +373,18 @@ def export_bundle(conn: sqlite3.Connection, *, asset_id: str, output_zip: Path) 
         "event_count": len(events),
         "head_event_hash": events[-1]["event_hash"],
     }
+    cert_row = conn.execute(
+        "SELECT cert_id, pdf_path, pdf_sha256, signed_at_utc FROM section63_certificates WHERE asset_id = ? ORDER BY signed_at_utc DESC LIMIT 1",
+        (asset_id,),
+    ).fetchone()
+    if cert_row and Path(cert_row["pdf_path"]).exists():
+        manifest["section63_certificate"] = {
+            "cert_id": cert_row["cert_id"],
+            "bundle_path": "certificate_s63.pdf",
+            "pdf_sha256": cert_row["pdf_sha256"],
+            "signed_at_utc": cert_row["signed_at_utc"],
+        }
+
     manifest_bytes = json.dumps(manifest, indent=2, sort_keys=True).encode("utf-8")
     custody_bytes = custody_jsonl.encode("utf-8")
 
@@ -381,6 +393,9 @@ def export_bundle(conn: sqlite3.Connection, *, asset_id: str, output_zip: Path) 
         "custody_log.jsonl": custody_bytes,
         "manifest.json": manifest_bytes,
     }
+    if cert_row and Path(cert_row["pdf_path"]).exists():
+        entries["certificate_s63.pdf"] = Path(cert_row["pdf_path"]).read_bytes()
+
     sums_lines = [f"{hashlib.sha256(content).hexdigest()}  {name}" for name, content in sorted(entries.items())]
     sums_bytes = ("\n".join(sums_lines) + "\n").encode("utf-8")
 

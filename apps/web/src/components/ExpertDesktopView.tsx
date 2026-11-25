@@ -44,6 +44,12 @@ export function ExpertDesktopView({
   const [notifyN8n, setNotifyN8n] = useState(true)
   const [audit, setAudit] = useState<AuditResponse | null>(null)
   const [auditing, setAuditing] = useState(false)
+  const [custodianName, setCustodianName] = useState('SI Rajesh Kumar')
+  const [expertName, setExpertName] = useState('Dr. Ananya Rao')
+  const [partAText, setPartAText] = useState('')
+  const [partBText, setPartBText] = useState('')
+  const [signedCert, setSignedCert] = useState<{ cert_id: string; pdf_sha256: string; signed_at_utc: string } | null>(null)
+  const [signing, setSigning] = useState(false)
   const [loading, setLoading] = useState(false)
 
   useEffect(() => {
@@ -320,7 +326,11 @@ export function ExpertDesktopView({
                   setAuditing(true)
                   void api
                     .runAudit(activeAsset.asset_id, logText, notifyN8n)
-                    .then(setAudit)
+                    .then((res) => {
+                      setAudit(res)
+                      setPartAText(res.part_a_draft)
+                      setPartBText(res.part_b_draft)
+                    })
                     .finally(() => setAuditing(false))
                 }}
                 className="flex items-center gap-2 rounded-lg bg-emerald-600 px-4 py-2 text-xs font-semibold text-white hover:bg-emerald-500 disabled:opacity-40"
@@ -379,6 +389,87 @@ export function ExpertDesktopView({
                   <p className="text-[11px] italic text-zinc-500">{audit.disclaimer}</p>
                 </div>
               )}
+            </section>
+
+            {/* Human Expert Sign-Off & BSA Section 63(4) PDF */}
+            <section className="space-y-3 rounded-xl border border-zinc-800 bg-zinc-900/70 p-4">
+              <h3 className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-zinc-400">
+                <ShieldCheck className="h-4 w-4 text-sky-400" />
+                Human Expert Sign-Off &amp; BSA Section 63(4) PDF
+              </h3>
+
+              <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
+                <input
+                  value={custodianName}
+                  onChange={(e) => setCustodianName(e.target.value)}
+                  placeholder="Part A Custodian Name"
+                  className="rounded-lg border border-zinc-700 bg-zinc-950 px-3 py-2 text-xs text-zinc-100"
+                />
+                <input
+                  value={expertName}
+                  onChange={(e) => setExpertName(e.target.value)}
+                  placeholder="Part B Certifying Expert Name"
+                  className="rounded-lg border border-zinc-700 bg-zinc-950 px-3 py-2 text-xs text-zinc-100"
+                />
+              </div>
+
+              <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
+                <textarea
+                  value={partAText}
+                  onChange={(e) => setPartAText(e.target.value)}
+                  rows={3}
+                  placeholder="Part A Declaration text (auto-filled by AI Audit or edit manually)..."
+                  className="rounded-lg border border-zinc-700 bg-zinc-950 p-2.5 text-xs text-zinc-200"
+                />
+                <textarea
+                  value={partBText}
+                  onChange={(e) => setPartBText(e.target.value)}
+                  rows={3}
+                  placeholder="Part B Expert Certification text (auto-filled by AI Audit or edit manually)..."
+                  className="rounded-lg border border-zinc-700 bg-zinc-950 p-2.5 text-xs text-zinc-200"
+                />
+              </div>
+
+              <div className="flex flex-wrap items-center gap-3">
+                <button
+                  type="button"
+                  disabled={signing || partAText.length < 10 || partBText.length < 10}
+                  onClick={() => {
+                    setSigning(true)
+                    void api
+                      .signSection63(activeAsset.asset_id, {
+                        custodian_name: custodianName,
+                        custodian_designation: 'Custodian / Investigating Officer',
+                        expert_name: expertName,
+                        expert_designation: 'Forensic / Technical Expert',
+                        part_a_text: partAText,
+                        part_b_text: partBText,
+                        notify_n8n: notifyN8n,
+                      })
+                      .then((res) => {
+                        setSignedCert(res)
+                        void api.listEvents(activeAsset.asset_id).then(setEvents)
+                      })
+                      .finally(() => setSigning(false))
+                  }}
+                  className="flex items-center gap-2 rounded-lg bg-sky-600 px-4 py-2 text-xs font-semibold text-white hover:bg-sky-500 disabled:opacity-40"
+                >
+                  <ShieldCheck className="h-3.5 w-3.5" />
+                  {signing ? 'Signing & Sealing PDF...' : 'Sign Part B & Seal Section 63(4) PDF'}
+                </button>
+
+                {signedCert && (
+                  <a
+                    href={api.certificatePdfUrl(activeAsset.asset_id)}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="flex items-center gap-1.5 rounded-lg border border-emerald-500/40 bg-emerald-500/15 px-3 py-2 text-xs font-semibold text-emerald-300 hover:bg-emerald-500/25"
+                  >
+                    <Download className="h-3.5 w-3.5" />
+                    Download Section 63(4) PDF ({signedCert.cert_id})
+                  </a>
+                )}
+              </div>
             </section>
           </>
         )}

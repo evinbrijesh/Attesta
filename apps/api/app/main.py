@@ -2,8 +2,10 @@
 
 from __future__ import annotations
 
+import hashlib
 import os
 import sqlite3
+import uuid
 from pathlib import Path
 
 from fastapi import Depends, FastAPI, File, Form, HTTPException, UploadFile
@@ -17,10 +19,12 @@ from app.custody import (
     export_bundle,
     ingest_evidence,
     record_handoff,
+    utc_now_iso,
     verify_asset_chain,
 )
 from app.db import get_connection
 from app.forensics import analyze_bytes
+from app.pdf_s63 import Section63CertificateData, render_section63_pdf
 from app.sponsors import fetch_bsa_section63_reference, notify_n8n
 
 
@@ -40,6 +44,18 @@ class HandoffRequest(BaseModel):
     location: str = Field(..., min_length=1)
     event_type: str = Field(default="HANDOFF")
     notes: str = Field(default="")
+
+
+class SignSection63Request(BaseModel):
+    """Request schema for human expert review and BSA Section 63(4) sign-off."""
+
+    custodian_name: str = Field(..., min_length=1)
+    custodian_designation: str = Field(default="Custodian / Investigating Officer")
+    expert_name: str = Field(..., min_length=1)
+    expert_designation: str = Field(default="Forensic / Technical Expert")
+    part_a_text: str = Field(..., min_length=10)
+    part_b_text: str = Field(..., min_length=10)
+    notify_n8n: bool = Field(default=False)
 
 
 def create_app(db_path: Path | None = None, storage_dir: Path | None = None) -> FastAPI:
@@ -206,6 +222,115 @@ def create_app(db_path: Path | None = None, storage_dir: Path | None = None) -> 
     @app.get("/api/legal/section63")
     def api_legal_section63(refresh: bool = False) -> dict[str, object]:
         return fetch_bsa_section63_reference(refresh_with_olostep=refresh)
+
+    @app.post("/api/assets/{asset_id}/sign-s63", status_code=201)
+    def api_sign_section63(
+        asset_id: str,
+        body: SignSection63Request,
+        db: sqlite3.Connection = Depends(get_db),
+    ) -> dict[str, object]:
+        ver = verify_asset_chain(db, asset_id)
+        if not ver.valid:
+            raise HTTPException(status_code=409, detail=f"Cannot sign tampered/invalid chain: {'; '.join(ver.errors)}")
+
+        asset = dict(db.execute("SELECT * FROM evidence_assets WHERE asset_id = ?", (asset_id,)).fetchone())
+        case = dict(db.execute("SELECT * FROM cases WHERE case_id = ?", (asset["case_id"],)).fetchone())
+
+        sign_event = record_handoff(
+            db,
+            asset_id=asset_id,
+            actor_from=body.custodian_name,
+            actor_to=body.expert_name,
+            purpose="Human Expert Sign-Off under BSA Section 63(4) Part B",
+            location="Expert Review Desk",
+            event_type="PART_B_SIGN_OFF",
+            notes=f"expert={body.expert_name}",
+        )
+        signed_at = utc_now_iso()
+        cert_id = f"s63_{uuid.uuid4().hex[:12]}"
+        pdf_path = resolved_storage.parent / "certificates" / f"{asset_id}_{cert_id}.pdf"
+        render_section63_pdf(
+            Section63CertificateData(
+                cert_id=cert_id,
+                case_id=case["case_id"],
+                case_title=case["title"],
+                asset_id=asset_id,
+                filename=asset["filename"],
+                media_type=asset["media_type"],
+                size_bytes=asset["size_bytes"],
+                sha256=asset["sha256"],
+                blake3=asset["blake3"],
+                head_event_hash=sign_event["event_hash"],
+                event_count=ver.event_count + 1,
+                custodian_name=body.custodian_name,
+                custodian_designation=body.custodian_designation,
+                expert_name=body.expert_name,
+                expert_designation=body.expert_designation,
+                part_a_text=body.part_a_text,
+                part_b_text=body.part_b_text,
+                signed_at_utc=signed_at,
+            ),
+            pdf_path,
+        )
+        pdf_sha256 = hashlib.sha256(pdf_path.read_bytes()).hexdigest()
+        db.execute(
+            """
+            INSERT INTO section63_certificates
+                (cert_id, asset_id, case_id, custodian_name, custodian_designation,
+                 expert_name, expert_designation, part_a_text, part_b_text,
+                 sha256, blake3, head_event_hash, signed_at_utc, pdf_path, pdf_sha256)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            """,
+            (
+                cert_id,
+                asset_id,
+                case["case_id"],
+                body.custodian_name,
+                body.custodian_designation,
+                body.expert_name,
+                body.expert_designation,
+                body.part_a_text,
+                body.part_b_text,
+                asset["sha256"],
+                asset["blake3"],
+                sign_event["event_hash"],
+                signed_at,
+                str(pdf_path),
+                pdf_sha256,
+            ),
+        )
+        db.commit()
+
+        n8n_status = None
+        if body.notify_n8n:
+            n8n_status = notify_n8n(
+                "PART_B_SIGNED",
+                {
+                    "case_id": case["case_id"],
+                    "asset_id": asset_id,
+                    "cert_id": cert_id,
+                    "head_event_hash": sign_event["event_hash"],
+                },
+            )
+
+        return {
+            "cert_id": cert_id,
+            "asset_id": asset_id,
+            "signed_at_utc": signed_at,
+            "pdf_sha256": pdf_sha256,
+            "head_event_hash": sign_event["event_hash"],
+            "n8n_notification": n8n_status,
+        }
+
+    @app.get("/api/assets/{asset_id}/certificate.pdf")
+    def api_get_certificate_pdf(asset_id: str, db: sqlite3.Connection = Depends(get_db)) -> FileResponse:
+        row = db.execute(
+            "SELECT pdf_path, cert_id FROM section63_certificates WHERE asset_id = ? ORDER BY signed_at_utc DESC LIMIT 1",
+            (asset_id,),
+        ).fetchone()
+        if row is None or not Path(row["pdf_path"]).exists():
+            raise HTTPException(status_code=404, detail="Signed Section 63(4) certificate not found")
+        return FileResponse(path=row["pdf_path"], media_type="application/pdf", filename=f"{asset_id}_{row['cert_id']}.pdf")
 
     return app
 
