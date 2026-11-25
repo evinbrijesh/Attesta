@@ -1,0 +1,13 @@
+Autopsy 4.21.0 Case Summary
+Case Name: Synthetic_UPI_Phishing_2026
+Case Number: CR-2026-441
+Examiner: Meera Nair, CFCE
+Host: LAB-WS-04
+Timezone: Asia/Kolkata
+Data Source: /evidence/android_backup_04.tar
+Ingest Modules Run:
+  - Hash Lookup (SHA-256): MATCHED_NONE_KNOWN_BAD
+  - Exif Parser: 14 images extracted; 2 missing Camera Model
+  - Timeline: 2026-11-23T18:10:00Z -> 2026-11-23T22:45:00Z
+Exported Artifacts: whatsapp_chat_export.json, screenshot_03.png
+SHA256(screenshot_03.png): 4b227777d4dd1fc61c6f884f48641d02b4d121d3fd328cb08b5531fcacdabf8a

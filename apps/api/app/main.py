@@ -18,6 +18,7 @@ from app.custody import (
     verify_asset_chain,
 )
 from app.db import get_connection
+from app.forensics import analyze_bytes
 
 
 class CaseCreateRequest(BaseModel):
@@ -131,6 +132,17 @@ def create_app(db_path: Path | None = None, storage_dir: Path | None = None) -> 
         except ValueError as exc:
             raise HTTPException(status_code=409, detail=str(exc)) from exc
         return FileResponse(path=str(out_zip), media_type="application/zip", filename=f"{asset_id}_bundle.zip")
+
+    @app.get("/api/assets/{asset_id}/forensics")
+    def api_forensics(asset_id: str, db: sqlite3.Connection = Depends(get_db)) -> dict[str, object]:
+        row = db.execute("SELECT storage_path, media_type FROM evidence_assets WHERE asset_id = ?", (asset_id,)).fetchone()
+        if row is None:
+            raise HTTPException(status_code=404, detail="Asset not found")
+        file_path = Path(row["storage_path"])
+        if not file_path.exists():
+            raise HTTPException(status_code=404, detail="Evidence file missing on disk")
+        report = analyze_bytes(file_path.read_bytes(), declared_media_type=row["media_type"])
+        return {"asset_id": asset_id, **report.to_dict()}
 
     return app
 

@@ -1,0 +1,6 @@
+[2026-11-24T04:15:00Z] OPERATOR: SI Rajesh Kumar (Cyber PS Whitefield)
+[2026-11-24T04:15:02Z] COMMAND: dd if=/dev/sdb1 of=/mnt/vault/cctv_gate_01.raw bs=4M status=progress conv=noerror,sync
+314572800 bytes (315 MB, 300 MiB) copied, 12.4 s, 25.4 MB/s
+[2026-11-24T04:15:15Z] WRITE_BLOCKER: Tableau T8u USB 3.0 Forensic Bridge (SN: TB8U-99102)
+[2026-11-24T04:15:18Z] SHA256(cctv_gate_01.raw): e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
+[2026-11-24T04:15:20Z] STATUS: Acquisition completed cleanly with 0 read errors.

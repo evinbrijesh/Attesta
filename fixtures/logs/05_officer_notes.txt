@@ -1,0 +1,5 @@
+Seizure Memo — Synthetic Case #2026-DEL-07
+On 24 Nov 2026 at 11:30 AM IST, complainant handed over 1 MP4 CCTV clip (gate_cam.mp4) on a SanDisk 32GB pen drive.
+Original SHA-256 recorded at shop PC: 7c211433f02071597741e6ff5a8ea34789abbf43
+Note: Shop manager first sent a copy of the video over WhatsApp to IO phone at 11:45 AM before pen drive was sealed.
+Sealed pen drive was kept in station malkhana; handed over to FSL courier at 16:30 PM IST (4h 45m gap with no intermediate log entry).
