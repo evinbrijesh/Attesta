@@ -11,6 +11,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse
 from pydantic import BaseModel, Field
 
+from app.agent import run_audit_agent
 from app.custody import (
     create_case,
     export_bundle,
@@ -20,6 +21,7 @@ from app.custody import (
 )
 from app.db import get_connection
 from app.forensics import analyze_bytes
+from app.sponsors import fetch_bsa_section63_reference, notify_n8n
 
 
 class CaseCreateRequest(BaseModel):
@@ -172,6 +174,38 @@ def create_app(db_path: Path | None = None, storage_dir: Path | None = None) -> 
             raise HTTPException(status_code=404, detail="Evidence file missing on disk")
         report = analyze_bytes(file_path.read_bytes(), declared_media_type=row["media_type"])
         return {"asset_id": asset_id, **report.to_dict()}
+
+    @app.post("/api/assets/{asset_id}/audit")
+    def api_audit(
+        asset_id: str,
+        body: dict[str, object] | None = None,
+        db: sqlite3.Connection = Depends(get_db),
+    ) -> dict[str, object]:
+        payload = body or {}
+        log_text = str(payload.get("log_text", ""))
+        send_n8n = bool(payload.get("notify_n8n", False))
+        try:
+            result = run_audit_agent(db, asset_id=asset_id, log_text=log_text)
+        except KeyError as exc:
+            raise HTTPException(status_code=404, detail=str(exc)) from exc
+
+        n8n_status = None
+        if send_n8n:
+            asset = db.execute("SELECT case_id, sha256 FROM evidence_assets WHERE asset_id = ?", (asset_id,)).fetchone()
+            n8n_status = notify_n8n(
+                "PART_A_SUBMITTED",
+                {
+                    "case_id": asset["case_id"] if asset else "",
+                    "asset_id": asset_id,
+                    "sha256": asset["sha256"] if asset else "",
+                    "flag_count": len(result.flags),
+                },
+            )
+        return {**result.model_dump(), "n8n_notification": n8n_status}
+
+    @app.get("/api/legal/section63")
+    def api_legal_section63(refresh: bool = False) -> dict[str, object]:
+        return fetch_bsa_section63_reference(refresh_with_olostep=refresh)
 
     return app
 

@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import {
   AlertTriangle,
+  Bot,
   CheckCircle2,
   Download,
   FileSearch,
@@ -11,6 +12,7 @@ import {
 import {
   api,
   type AssetItem,
+  type AuditResponse,
   type CaseItem,
   type CustodyEvent,
   type ForensicsResponse,
@@ -38,6 +40,10 @@ export function ExpertDesktopView({
   const [events, setEvents] = useState<CustodyEvent[]>([])
   const [verify, setVerify] = useState<VerifyResponse | null>(null)
   const [forensics, setForensics] = useState<ForensicsResponse | null>(null)
+  const [logText, setLogText] = useState('')
+  const [notifyN8n, setNotifyN8n] = useState(true)
+  const [audit, setAudit] = useState<AuditResponse | null>(null)
+  const [auditing, setAuditing] = useState(false)
   const [loading, setLoading] = useState(false)
 
   useEffect(() => {
@@ -280,6 +286,100 @@ export function ExpertDesktopView({
                 )}
               </section>
             )}
+
+            {/* AI Forensic Audit Agent & Section 63(4) Grounded Draft */}
+            <section className="space-y-3 rounded-xl border border-zinc-800 bg-zinc-900/70 p-4">
+              <div className="flex flex-wrap items-center justify-between gap-2">
+                <h3 className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-zinc-400">
+                  <Bot className="h-4 w-4 text-emerald-400" />
+                  AI Forensic Audit Agent &amp; Section 63(4) Draft
+                </h3>
+                <label className="flex items-center gap-1.5 text-xs text-zinc-400">
+                  <input
+                    type="checkbox"
+                    checked={notifyN8n}
+                    onChange={(e) => setNotifyN8n(e.target.checked)}
+                    className="rounded border-zinc-700 bg-zinc-950"
+                  />
+                  Notify Expert via n8n
+                </label>
+              </div>
+
+              <textarea
+                value={logText}
+                onChange={(e) => setLogText(e.target.value)}
+                rows={4}
+                placeholder="Optional: Paste acquisition log (dd, ewfacquire, Autopsy, ExifTool JSON, or officer seizure notes)..."
+                className="w-full rounded-lg border border-zinc-700 bg-zinc-950 p-3 font-mono text-xs text-zinc-200"
+              />
+
+              <button
+                type="button"
+                disabled={auditing}
+                onClick={() => {
+                  setAuditing(true)
+                  void api
+                    .runAudit(activeAsset.asset_id, logText, notifyN8n)
+                    .then(setAudit)
+                    .finally(() => setAuditing(false))
+                }}
+                className="flex items-center gap-2 rounded-lg bg-emerald-600 px-4 py-2 text-xs font-semibold text-white hover:bg-emerald-500 disabled:opacity-40"
+              >
+                <Bot className="h-3.5 w-3.5" />
+                {auditing ? 'Auditing & Drafting...' : 'Run AI Audit & Draft Section 63(4)'}
+              </button>
+
+              {audit && (
+                <div className="space-y-3 border-t border-zinc-800 pt-3 text-xs">
+                  <div className="flex flex-wrap items-center gap-2 text-[11px] text-zinc-400">
+                    <span className="rounded bg-zinc-800 px-2 py-0.5 font-mono text-zinc-200">
+                      drafter: {audit.drafter_mode}
+                    </span>
+                    {audit.parsed_log && (
+                      <span className="rounded bg-zinc-800 px-2 py-0.5 font-mono text-zinc-200">
+                        log_format: {audit.parsed_log.format_detected}
+                      </span>
+                    )}
+                    {audit.n8n_notification && (
+                      <span className="rounded bg-emerald-500/20 px-2 py-0.5 text-emerald-300">
+                        n8n: {audit.n8n_notification.delivered ? 'Telegram Sent' : 'Skipped'}
+                      </span>
+                    )}
+                  </div>
+
+                  {audit.flags.length > 0 && (
+                    <div className="space-y-1.5">
+                      {audit.flags.map((fl, idx) => (
+                        <div
+                          key={`${fl.code}-${idx}`}
+                          className="rounded-lg border border-amber-500/30 bg-amber-500/10 p-2 text-amber-200"
+                        >
+                          <span className="font-mono font-semibold">{fl.code}</span>{' '}
+                          <span className="font-mono text-[10px] text-amber-300">{fl.citation}</span>
+                          <div>{fl.message}</div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+
+                  <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
+                    <div className="rounded-lg border border-zinc-800 bg-zinc-950 p-3">
+                      <div className="mb-1 text-[10px] font-semibold uppercase tracking-wider text-zinc-400">
+                        Part A Draft (Custodian)
+                      </div>
+                      <p className="leading-relaxed text-zinc-200">{audit.part_a_draft}</p>
+                    </div>
+                    <div className="rounded-lg border border-zinc-800 bg-zinc-950 p-3">
+                      <div className="mb-1 text-[10px] font-semibold uppercase tracking-wider text-zinc-400">
+                        Part B Draft (Expert)
+                      </div>
+                      <p className="leading-relaxed text-zinc-200">{audit.part_b_draft}</p>
+                    </div>
+                  </div>
+                  <p className="text-[11px] italic text-zinc-500">{audit.disclaimer}</p>
+                </div>
+              )}
+            </section>
           </>
         )}
       </main>

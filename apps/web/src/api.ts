@@ -88,6 +88,29 @@ async function req<T>(url: string, init?: RequestInit): Promise<T> {
   return res.json() as Promise<T>
 }
 
+export interface AuditFlag {
+  code: string
+  severity: string
+  message: string
+  citation: string
+}
+
+export interface AuditResponse {
+  asset_id: string
+  parsed_log: {
+    format_detected: string
+    operator_or_examiner: string | null
+    device_or_source: string | null
+    declared_sha256: string | null
+  } | null
+  flags: AuditFlag[]
+  part_a_draft: string
+  part_b_draft: string
+  drafter_mode: string
+  disclaimer: string
+  n8n_notification: { delivered: boolean; status_code?: number; reason?: string } | null
+}
+
 export const api = {
   listCases: () => req<CaseItem[]>('/api/cases'),
   createCase: (title: string, description: string) =>
@@ -117,5 +140,11 @@ export const api = {
     }),
   verifyAsset: (assetId: string) => req<VerifyResponse>(`/api/assets/${assetId}/verify`),
   getForensics: (assetId: string) => req<ForensicsResponse>(`/api/assets/${assetId}/forensics`),
+  runAudit: (assetId: string, logText: string, notifyN8n: boolean) =>
+    req<AuditResponse>(`/api/assets/${assetId}/audit`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ log_text: logText, notify_n8n: notifyN8n }),
+    }),
   bundleUrl: (assetId: string) => `/api/assets/${assetId}/bundle`,
 }
