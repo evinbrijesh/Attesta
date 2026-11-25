@@ -58,8 +58,22 @@ class SignSection63Request(BaseModel):
     notify_n8n: bool = Field(default=False)
 
 
+def _load_root_env() -> None:
+    """Load key=value pairs from repo-root .env if not already in os.environ."""
+    env_path = Path(__file__).resolve().parents[3] / ".env"
+    if not env_path.exists():
+        return
+    for raw_line in env_path.read_text(encoding="utf-8").splitlines():
+        line = raw_line.strip()
+        if not line or line.startswith("#") or "=" not in line:
+            continue
+        key, val = line.split("=", 1)
+        os.environ.setdefault(key.strip(), val.strip())
+
+
 def create_app(db_path: Path | None = None, storage_dir: Path | None = None) -> FastAPI:
     """Create and configure the FastAPI application instance."""
+    _load_root_env()
     resolved_db = db_path or Path(os.getenv("ATTESTA_DB_PATH", "./data/attesta.db"))
     resolved_storage = storage_dir or Path(os.getenv("ATTESTA_STORAGE_DIR", "./data/evidence"))
     resolved_bundles = resolved_storage.parent / "bundles"

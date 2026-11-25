@@ -66,6 +66,10 @@ export function ExpertDesktopView({
   }, [selectedCaseId, refreshKey, selectedAssetId, onSelectAsset])
 
   useEffect(() => {
+    setAudit(null)
+    setPartAText('')
+    setPartBText('')
+    setSignedCert(null)
     if (!selectedAssetId) {
       setEvents([])
       setVerify(null)
