@@ -15,9 +15,9 @@ Under India's **Bharatiya Sakshya Adhiniyam (BSA), Section 63(4)** (effective 1 
 Today, advocates, police cyber cells, and forensic labs prepare these manually in Word/Excel—leading to missing hashes, timezone conflicts, broken custody chains, and excluded evidence.
 
 **Attesta** automates this end-to-end while keeping cryptography strictly deterministic:
-1. **Deterministic Intake & Hashing:** Computes `SHA-256` + `BLAKE3` at intake (idempotent by content hash).
+1. **Deterministic Intake & Hashing:** Computes `SHA-256` + `BLAKE3` at intake (plus client-side WebCrypto `SHA-256` on mobile before upload).
 2. **Immutable Hash-Chained Custody Log:** Every handoff is `Ed25519`-signed and linked to the previous event hash (`SQLite` append-only triggers).
-3. **AI Audit Agent *(Code hashes & signs; LLM only parses, flags, and drafts)*:** Parses messy acquisition logs, flags custody gaps or UTC/IST conflicts, and drafts grounded Part A/B narratives citing verified event IDs and hashes.
+3. **AI Audit Agent *(Code hashes & signs; LLM only parses, flags, and drafts)*:** Parses 5 forensic log formats, flags custody gaps or UTC/IST conflicts, and drafts grounded Part A/B narratives citing verified event IDs and hashes.
 4. **Human Expert Sign-Off & Section 63(4) PDF:** Exports the statutory certificate + tamper-evident `.zip` bundle.
 5. **Zero-Trust Offline Verifier (`attesta-verify`):** Standalone open-source CLI that verifies any exported `.zip` bundle offline without trusting any server.
 
@@ -25,11 +25,25 @@ Today, advocates, police cyber cells, and forensic labs prepare these manually i
 
 ---
 
+## Measured Benchmarks
+
+| Metric | Observed Result | Source |
+|---|---|---|
+| Single-byte-flip tamper detection | **100 / 100 caught (100.0%)** | [docs/BENCHMARKS.md](docs/BENCHMARKS.md) |
+| Synthetic chain-break detection | **50 / 50 caught (100.0%)** | [docs/BENCHMARKS.md](docs/BENCHMARKS.md) |
+| Clean-chain false-flag rate | **0 / 50 (0.0%)** | [docs/BENCHMARKS.md](docs/BENCHMARKS.md) |
+| Ingest idempotency | **20 / 20 hits (100.0%)** | [docs/BENCHMARKS.md](docs/BENCHMARKS.md) |
+| Forensic log parse accuracy | **5 / 5 formats (100.0%)** | [docs/BENCHMARKS.md](docs/BENCHMARKS.md) |
+| End-to-end deterministic latency | **88.81 ms** | [docs/BENCHMARKS.md](docs/BENCHMARKS.md) |
+
+---
+
 ## Documentation
 
-- [Product Requirements Document (PRD)](docs/PRD.md) — Problem statement, dual-mode UX (`📱 Field Mobile` ⇄ `🖥️ Expert Desktop`), sponsor integrations, and evaluation benchmarks.
-- [Technical Architecture](docs/ARCHITECTURE.md) — Cryptographic model, append-only SQLite triggers, `attesta-bundle-v1` format, and API endpoints.
-- [Roadmap](docs/ROADMAP.md) — 10-day Hackathon Sprint (Nov 26 – Dec 6, 2026) and post-hackathon production roadmap.
+- [Product Requirements Document (PRD)](docs/PRD.md)
+- [Technical Architecture](docs/ARCHITECTURE.md)
+- [Benchmarks Report](docs/BENCHMARKS.md)
+- [Roadmap](docs/ROADMAP.md)
 
 ---
 
@@ -39,34 +53,41 @@ Today, advocates, police cyber cells, and forensic labs prepare these manually i
 attesta/
 ├── apps/
 │   ├── api/             # FastAPI backend: crypto, SQLite ledger, forensics, AI agent, S.63 PDF, tests
-│   └── web/             # React + Vite + Tailwind PWA (📱 Field Mobile ⇄ 🖥️ Expert Desktop)
+│   └── web/             # React + Vite + Tailwind PWA (Field Mobile ⇄ Expert Desktop)
 ├── packages/
 │   └── verify-coc/      # Standalone offline CLI verifier (`attesta-verify`)
 ├── fixtures/
 │   └── logs/            # 5 synthetic forensic log formats (dd, ewfacquire, Autopsy, ExifTool, officer notes)
-├── docs/                # PRD, Architecture, and Roadmap
+├── docs/                # PRD, Architecture, Benchmarks, and Roadmap
+├── docker-compose.yml
 └── .env.example
 ```
 
 ---
 
-## Quickstart & Verification
+## Quickstart
 
+### Option 1: Docker (1 Command)
 ```bash
-# 1. Run Backend API & Core Tests (30/30 passing)
+cp .env.example .env   # optional: add GEMINI_API_KEY, OLOSTEP_API_KEY, N8N_WEBHOOK_URL
+docker compose up --build
+# Web PWA: http://localhost:5173  |  API: http://localhost:8000/api/health
+```
+
+### Option 2: Local Dev & Tests
+```bash
+# 1. Run Backend API & Core Tests (31/31 passing)
 cd apps/api
 uv sync
 uv run pytest -v
-
-# 2. Start API Server
 uv run uvicorn app.main:app --reload   # http://localhost:8000/api/health
 
-# 3. Start Adaptive Mobile + Desktop PWA (in a second terminal)
+# 2. Start Adaptive Mobile + Desktop PWA (in a second terminal)
 cd apps/web
 npm install
 npm run dev                            # http://localhost:5173
 
-# 4. Verify an Exported Bundle Offline
+# 3. Verify an Exported Bundle Offline
 cd packages/verify-coc
 uv sync
 uv run attesta-verify path/to/bundle.zip

@@ -1,0 +1,29 @@
+services:
+  api:
+    build:
+      context: .
+      dockerfile: apps/api/Dockerfile
+    env_file:
+      - path: .env
+        required: false
+    environment:
+      - ATTESTA_DB_PATH=/app/data/attesta.db
+      - ATTESTA_STORAGE_DIR=/app/data/evidence
+    ports:
+      - "8000:8000"
+    volumes:
+      - attesta_data:/app/data
+    restart: unless-stopped
+
+  web:
+    build:
+      context: .
+      dockerfile: apps/web/Dockerfile
+    depends_on:
+      - api
+    ports:
+      - "5173:80"
+    restart: unless-stopped
+
+volumes:
+  attesta_data:
