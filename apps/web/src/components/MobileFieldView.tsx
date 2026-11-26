@@ -96,23 +96,33 @@ export function MobileFieldView({
   }
 
   const hashMatches = ingestResult && clientSha && ingestResult.sha256 === clientSha
+  const step = ingestResult ? 3 : file ? 2 : 1
 
   return (
-    <div className="space-y-4 p-4">
-      <div className="rounded-xl border border-amber-500/30 bg-amber-500/10 px-3 py-2 text-xs text-amber-200">
-        <span className="font-semibold">Field Custodian Mode (Part A):</span> Evidence is fingerprinted
-        with <code className="font-mono">SHA-256</code> on-device before upload.
+    <div className="space-y-4 p-4 text-[#141413]">
+      {/* 3-Step Intake Progress */}
+      <div className="flex items-center justify-between border-b border-[#e5dfd3] pb-3 font-mono text-[10px] font-medium">
+        <span className={step >= 1 ? 'text-[#0f5132]' : 'text-[#a8a29e]'}>1. CASE</span>
+        <span className="text-[#d6cfc2]">—</span>
+        <span className={step >= 2 ? 'text-[#0f5132]' : 'text-[#a8a29e]'}>2. FINGERPRINT</span>
+        <span className="text-[#d6cfc2]">—</span>
+        <span className={step >= 3 ? 'text-[#0f5132]' : 'text-[#a8a29e]'}>3. QR SEAL</span>
+      </div>
+
+      <div className="rounded-xl border border-[#b45309]/25 bg-[#fef3c7]/60 px-3 py-2 text-[11px] leading-relaxed text-[#78350f]">
+        <span className="font-semibold">Part A Pre-Upload Seal:</span> Evidence is hashed with{' '}
+        <code className="font-mono font-semibold">SHA-256</code> on-device before leaving your phone.
       </div>
 
       {/* Case Selection */}
-      <div className="space-y-2 rounded-xl border border-zinc-800 bg-zinc-900/70 p-3">
-        <label className="block text-xs font-medium uppercase tracking-wider text-zinc-400">
-          Active Case
+      <div className="space-y-2 rounded-xl border border-[#ded8cc] bg-white p-3.5 shadow-2xs">
+        <label className="block text-[10px] font-semibold uppercase tracking-wider text-[#6b665c]">
+          Active Case Dossier
         </label>
         <select
           value={selectedCaseId}
           onChange={(e) => onSelectCase(e.target.value)}
-          className="w-full rounded-lg border border-zinc-700 bg-zinc-950 px-3 py-2 text-sm text-zinc-100"
+          className="w-full rounded-lg border border-[#d6cfc2] bg-[#faf8f4] px-3 py-2 text-xs font-medium text-[#141413]"
         >
           <option value="">-- Select a case --</option>
           {cases.map((c) => (
@@ -126,13 +136,13 @@ export function MobileFieldView({
             value={newTitle}
             onChange={(e) => setNewTitle(e.target.value)}
             placeholder="New case title (e.g. Case 2026-BLR-09)"
-            className="flex-1 rounded-lg border border-zinc-700 bg-zinc-950 px-3 py-1.5 text-xs text-zinc-100"
+            className="flex-1 rounded-lg border border-[#d6cfc2] bg-[#faf8f4] px-3 py-1.5 text-xs text-[#141413] placeholder:text-[#a8a29e]"
           />
           <button
             type="button"
             onClick={handleCreateCase}
             disabled={busy || !newTitle.trim()}
-            className="rounded-lg bg-zinc-800 px-3 py-1.5 text-xs font-medium text-zinc-100 hover:bg-zinc-700 disabled:opacity-40"
+            className="rounded-lg bg-[#141413] px-3 py-1.5 text-xs font-medium text-white hover:bg-[#292524] disabled:opacity-40"
           >
             + Case
           </button>
@@ -140,14 +150,16 @@ export function MobileFieldView({
       </div>
 
       {/* Evidence Capture */}
-      <div className="space-y-3 rounded-xl border border-zinc-800 bg-zinc-900/70 p-3">
-        <label className="flex cursor-pointer flex-col items-center justify-center gap-2 rounded-lg border border-dashed border-zinc-700 bg-zinc-950/60 p-4 text-center hover:border-emerald-500/60">
-          <FileUp className="h-6 w-6 text-emerald-400" />
-          <span className="text-sm font-medium text-zinc-200">
+      <div className="space-y-3 rounded-xl border border-[#ded8cc] bg-white p-3.5 shadow-2xs">
+        <label className="flex cursor-pointer flex-col items-center justify-center gap-1.5 rounded-xl border border-dashed border-[#c7bfb0] bg-[#faf8f4] p-4 text-center transition hover:border-[#0f5132]">
+          <div className="flex h-9 w-9 items-center justify-center rounded-full bg-[#0f5132]/10 text-[#0f5132]">
+            <FileUp className="h-4 w-4" />
+          </div>
+          <span className="text-xs font-semibold text-[#141413]">
             {file ? file.name : 'Tap to capture or select evidence file'}
           </span>
-          <span className="text-[11px] text-zinc-500">
-            {file ? `${(file.size / 1024).toFixed(1)} KB` : 'Photo, CCTV MP4, audio, PDF, or log'}
+          <span className="text-[11px] text-[#6b665c]">
+            {file ? `${(file.size / 1024).toFixed(1)} KB` : 'Photo, CCTV MP4, audio, PDF, or forensic log'}
           </span>
           <input
             type="file"
@@ -157,12 +169,12 @@ export function MobileFieldView({
         </label>
 
         {clientSha && (
-          <div className="rounded-lg border border-zinc-800 bg-zinc-950 p-2.5 text-xs">
-            <div className="flex items-center gap-1.5 font-medium text-emerald-400">
+          <div className="rounded-lg border border-[#0f5132]/25 bg-[#0f5132]/5 p-2.5 text-xs">
+            <div className="flex items-center gap-1.5 font-semibold text-[#0f5132]">
               <Fingerprint className="h-3.5 w-3.5" />
               On-Device WebCrypto SHA-256
             </div>
-            <p className="mt-1 break-all font-mono text-[11px] text-zinc-300">{clientSha}</p>
+            <p className="mt-1 break-all font-mono text-[10px] text-[#292524]">{clientSha}</p>
           </div>
         )}
 
@@ -171,19 +183,19 @@ export function MobileFieldView({
             value={custodian}
             onChange={(e) => setCustodian(e.target.value)}
             placeholder="Custodian Name / Rank"
-            className="rounded-lg border border-zinc-700 bg-zinc-950 px-3 py-2 text-xs text-zinc-100"
+            className="rounded-lg border border-[#d6cfc2] bg-[#faf8f4] px-3 py-2 text-xs text-[#141413]"
           />
           <input
             value={location}
             onChange={(e) => setLocation(e.target.value)}
             placeholder="Seizure Location"
-            className="rounded-lg border border-zinc-700 bg-zinc-950 px-3 py-2 text-xs text-zinc-100"
+            className="rounded-lg border border-[#d6cfc2] bg-[#faf8f4] px-3 py-2 text-xs text-[#141413]"
           />
           <input
             value={purpose}
             onChange={(e) => setPurpose(e.target.value)}
             placeholder="Purpose"
-            className="rounded-lg border border-zinc-700 bg-zinc-950 px-3 py-2 text-xs text-zinc-100"
+            className="rounded-lg border border-[#d6cfc2] bg-[#faf8f4] px-3 py-2 text-xs text-[#141413]"
           />
         </div>
 
@@ -191,7 +203,7 @@ export function MobileFieldView({
           type="button"
           onClick={() => void handleIngest()}
           disabled={busy || !selectedCaseId || !file}
-          className="flex w-full items-center justify-center gap-2 rounded-lg bg-emerald-600 px-4 py-2.5 text-sm font-semibold text-white hover:bg-emerald-500 disabled:opacity-40"
+          className="flex w-full items-center justify-center gap-2 rounded-lg bg-[#0f5132] px-4 py-2.5 text-xs font-semibold text-white shadow-xs transition hover:bg-[#0c4128] disabled:opacity-40"
         >
           <ShieldCheck className="h-4 w-4" />
           {busy ? 'Sealing...' : 'Seal & Upload Evidence'}
@@ -199,60 +211,60 @@ export function MobileFieldView({
       </div>
 
       {error && (
-        <div className="rounded-lg border border-red-500/40 bg-red-500/10 p-2.5 text-xs text-red-300">
+        <div className="rounded-lg border border-red-600/30 bg-red-50 p-2.5 text-xs text-red-700">
           {error}
         </div>
       )}
 
       {/* Sealed Confirmation + QR Handoff */}
       {ingestResult && (
-        <div className="space-y-3 rounded-xl border border-emerald-500/40 bg-emerald-950/20 p-3">
+        <div className="space-y-3 rounded-xl border border-[#0f5132]/30 bg-white p-3.5 shadow-sm">
           <div className="flex items-center justify-between">
-            <span className="flex items-center gap-1.5 text-xs font-semibold text-emerald-400">
+            <span className="flex items-center gap-1.5 text-xs font-semibold text-[#0f5132]">
               <CheckCircle2 className="h-4 w-4" />
               {ingestResult.idempotent_hit ? 'Idempotent Match (Already Sealed)' : 'Evidence Sealed'}
             </span>
             {hashMatches && (
-              <span className="rounded-full bg-emerald-500/20 px-2 py-0.5 text-[10px] font-semibold text-emerald-300">
-                CLIENT = SERVER SHA-256
+              <span className="rounded-full bg-[#0f5132]/10 px-2 py-0.5 font-mono text-[9px] font-semibold text-[#0f5132]">
+                CLIENT = SERVER
               </span>
             )}
           </div>
 
-          <div className="flex flex-col items-center gap-2 rounded-lg bg-white p-3 text-zinc-900">
+          <div className="flex flex-col items-center gap-2 rounded-lg border border-[#e5dfd3] bg-[#faf8f4] p-3">
             <QRCodeSVG
-              size={128}
+              size={124}
               value={JSON.stringify({
                 asset_id: ingestResult.asset_id,
                 sha256: ingestResult.sha256,
                 case_id: selectedCaseId,
               })}
             />
-            <span className="flex items-center gap-1 text-[11px] font-medium text-zinc-700">
-              <QrCode className="h-3.5 w-3.5" /> Custody QR · {ingestResult.asset_id}
+            <span className="flex items-center gap-1 font-mono text-[10px] font-medium text-[#57534e]">
+              <QrCode className="h-3.5 w-3.5" /> {ingestResult.asset_id}
             </span>
           </div>
 
-          <div className="space-y-2 border-t border-emerald-500/20 pt-2">
-            <label className="block text-[11px] font-medium text-zinc-300">
-              Log Handoff to Forensic Expert
+          <div className="space-y-2 border-t border-[#e5dfd3] pt-2.5">
+            <label className="block text-[10px] font-semibold uppercase tracking-wider text-[#6b665c]">
+              Log Custody Handoff
             </label>
             <div className="flex gap-2">
               <input
                 value={handoffTo}
                 onChange={(e) => setHandoffTo(e.target.value)}
-                className="flex-1 rounded-lg border border-zinc-700 bg-zinc-950 px-2.5 py-1.5 text-xs text-zinc-100"
+                className="flex-1 rounded-lg border border-[#d6cfc2] bg-[#faf8f4] px-2.5 py-1.5 text-xs text-[#141413]"
               />
               <button
                 type="button"
                 onClick={() => void handleHandoff()}
                 disabled={busy}
-                className="flex items-center gap-1 rounded-lg bg-zinc-100 px-3 py-1.5 text-xs font-semibold text-zinc-950 hover:bg-white"
+                className="flex items-center gap-1 rounded-lg bg-[#141413] px-3 py-1.5 text-xs font-semibold text-white hover:bg-[#292524]"
               >
                 <Send className="h-3 w-3" /> Send
               </button>
             </div>
-            {handoffStatus && <p className="text-xs text-emerald-300">{handoffStatus}</p>}
+            {handoffStatus && <p className="text-xs font-medium text-[#0f5132]">{handoffStatus}</p>}
           </div>
         </div>
       )}

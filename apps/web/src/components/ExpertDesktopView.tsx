@@ -8,6 +8,7 @@ import {
   Download,
   FileSearch,
   Link2,
+  Scale,
   ShieldAlert,
   ShieldCheck,
 } from 'lucide-react'
@@ -103,16 +104,19 @@ export function ExpertDesktopView({
 
   return (
     <div className="mx-auto grid max-w-6xl grid-cols-1 gap-6 p-6 lg:grid-cols-12">
-      {/* Left Sidebar: Cases & Assets */}
+      {/* Left Dossier Sidebar */}
       <aside className="space-y-4 lg:col-span-4">
-        <div className="rounded-xl border border-zinc-800 bg-zinc-900/70 p-4">
-          <h2 className="text-xs font-semibold uppercase tracking-wider text-zinc-400">
-            1. Select Case
-          </h2>
-          <div className="mt-2 space-y-1.5">
+        <div className="rounded-2xl border border-[#ded8cc] bg-white p-4 shadow-2xs">
+          <div className="flex items-center justify-between">
+            <h2 className="text-[11px] font-semibold uppercase tracking-wider text-[#6b665c]">
+              1. Case Dossiers
+            </h2>
+            <span className="font-mono text-[10px] text-[#a8a29e]">{cases.length} total</span>
+          </div>
+          <div className="mt-3 space-y-2">
             {cases.length === 0 && (
-              <p className="text-xs text-zinc-500">
-                No cases yet. Switch to Field Mobile view to create &amp; seal evidence.
+              <p className="rounded-lg border border-dashed border-[#d6cfc2] bg-[#faf8f4] p-3 text-xs text-[#6b665c]">
+                No cases yet. Switch to <span className="font-semibold">Field Mobile</span> to create a case &amp; seal evidence.
               </p>
             )}
             {cases.map((c) => (
@@ -120,40 +124,43 @@ export function ExpertDesktopView({
                 key={c.case_id}
                 type="button"
                 onClick={() => onSelectCase(c.case_id)}
-                className={`w-full rounded-lg border px-3 py-2 text-left text-xs transition ${
+                className={`w-full rounded-xl border px-3.5 py-2.5 text-left text-xs transition ${
                   c.case_id === selectedCaseId
-                    ? 'border-emerald-500/60 bg-emerald-500/10 text-emerald-200'
-                    : 'border-zinc-800 bg-zinc-950/60 text-zinc-300 hover:border-zinc-700'
+                    ? 'border-[#0f5132]/40 bg-[#0f5132]/5 text-[#141413] shadow-2xs'
+                    : 'border-[#e5dfd3] bg-[#faf8f4] text-[#44403c] hover:border-[#c7bfb0]'
                 }`}
               >
                 <div className="font-semibold">{c.title}</div>
-                <div className="font-mono text-[10px] text-zinc-500">{c.case_id}</div>
+                <div className="mt-0.5 font-mono text-[10px] text-[#78716c]">{c.case_id}</div>
               </button>
             ))}
           </div>
         </div>
 
-        <div className="rounded-xl border border-zinc-800 bg-zinc-900/70 p-4">
-          <h2 className="text-xs font-semibold uppercase tracking-wider text-zinc-400">
-            2. Sealed Evidence Assets
-          </h2>
-          <div className="mt-2 space-y-1.5">
+        <div className="rounded-2xl border border-[#ded8cc] bg-white p-4 shadow-2xs">
+          <div className="flex items-center justify-between">
+            <h2 className="text-[11px] font-semibold uppercase tracking-wider text-[#6b665c]">
+              2. Sealed Evidence
+            </h2>
+            <span className="font-mono text-[10px] text-[#a8a29e]">{assets.length} files</span>
+          </div>
+          <div className="mt-3 space-y-2">
             {assets.length === 0 && (
-              <p className="text-xs text-zinc-500">No evidence assets ingested for this case.</p>
+              <p className="text-xs text-[#78716c]">No evidence assets ingested for this case.</p>
             )}
             {assets.map((a) => (
               <button
                 key={a.asset_id}
                 type="button"
                 onClick={() => onSelectAsset(a.asset_id)}
-                className={`w-full rounded-lg border px-3 py-2 text-left text-xs transition ${
+                className={`w-full rounded-xl border px-3.5 py-2.5 text-left text-xs transition ${
                   a.asset_id === selectedAssetId
-                    ? 'border-sky-500/60 bg-sky-500/10 text-sky-200'
-                    : 'border-zinc-800 bg-zinc-950/60 text-zinc-300 hover:border-zinc-700'
+                    ? 'border-[#1e3a8a]/40 bg-[#1e3a8a]/5 text-[#141413] shadow-2xs'
+                    : 'border-[#e5dfd3] bg-[#faf8f4] text-[#44403c] hover:border-[#c7bfb0]'
                 }`}
               >
                 <div className="font-semibold">{a.filename}</div>
-                <div className="mt-0.5 truncate font-mono text-[10px] text-zinc-400">
+                <div className="mt-0.5 truncate font-mono text-[10px] text-[#78716c]">
                   SHA-256: {a.sha256}
                 </div>
               </button>
@@ -162,42 +169,54 @@ export function ExpertDesktopView({
         </div>
       </aside>
 
-      {/* Main Panel: Verification, Timeline & Advisory Forensics */}
+      {/* Main Forensic Dossier Workspace */}
       <main className="space-y-5 lg:col-span-8">
         {!activeAsset ? (
-          <div className="rounded-xl border border-dashed border-zinc-800 p-10 text-center text-sm text-zinc-500">
-            Select a case and evidence asset to inspect its cryptographic chain of custody.
+          <div className="rounded-2xl border border-dashed border-[#c7bfb0] bg-white/70 p-12 text-center">
+            <Scale className="mx-auto h-8 w-8 text-[#a8a29e]" />
+            <h3 className="mt-3 font-serif-display text-2xl text-[#141413]">
+              Select an Evidence Asset
+            </h3>
+            <p className="mt-1 text-xs text-[#6b665c]">
+              Inspect its Ed25519 custody chain, run the AI audit agent, and prepare the BSA Section 63(4) certificate.
+            </p>
           </div>
         ) : (
           <>
-            {/* Verification Banner */}
+            {/* Verification Dossier Header */}
             <div
-              className={`flex flex-wrap items-center justify-between gap-4 rounded-xl border p-4 ${
-                verify?.valid
-                  ? 'border-emerald-500/40 bg-emerald-950/20'
-                  : 'border-red-500/40 bg-red-950/20'
+              className={`flex flex-wrap items-center justify-between gap-4 rounded-2xl border bg-white p-5 shadow-xs ${
+                verify?.valid ? 'border-[#0f5132]/30' : 'border-red-600/40'
               }`}
             >
-              <div className="flex items-start gap-3">
-                {verify?.valid ? (
-                  <ShieldCheck className="mt-0.5 h-6 w-6 text-emerald-400" />
-                ) : (
-                  <ShieldAlert className="mt-0.5 h-6 w-6 text-red-400" />
-                )}
+              <div className="flex items-start gap-3.5">
+                <div
+                  className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-xl ${
+                    verify?.valid ? 'bg-[#0f5132]/10 text-[#0f5132]' : 'bg-red-100 text-red-700'
+                  }`}
+                >
+                  {verify?.valid ? (
+                    <ShieldCheck className="h-5 w-5" />
+                  ) : (
+                    <ShieldAlert className="h-5 w-5" />
+                  )}
+                </div>
                 <div>
-                  <div className="flex items-center gap-2">
-                    <h3 className="text-sm font-semibold text-zinc-100">{activeAsset.filename}</h3>
+                  <div className="flex flex-wrap items-center gap-2">
+                    <h3 className="font-serif-display text-2xl leading-none text-[#141413]">
+                      {activeAsset.filename}
+                    </h3>
                     <span
-                      className={`rounded-full px-2 py-0.5 text-[10px] font-bold ${
+                      className={`rounded-full border px-2.5 py-0.5 font-mono text-[10px] font-semibold ${
                         verify?.valid
-                          ? 'bg-emerald-500/20 text-emerald-300'
-                          : 'bg-red-500/20 text-red-300'
+                          ? 'border-[#0f5132]/25 bg-[#0f5132]/10 text-[#0f5132]'
+                          : 'border-red-600/25 bg-red-100 text-red-700'
                       }`}
                     >
                       {loading ? 'VERIFYING...' : verify?.valid ? 'CHAIN VALID' : 'TAMPER DETECTED'}
                     </span>
                   </div>
-                  <div className="mt-1 flex items-center gap-2 font-mono text-[11px] text-zinc-400">
+                  <div className="mt-2 flex items-center gap-2 font-mono text-[11px] text-[#44403c]">
                     <span className="truncate">SHA-256: {activeAsset.sha256}</span>
                     <button
                       type="button"
@@ -206,13 +225,13 @@ export function ExpertDesktopView({
                         setCopiedHash(true)
                         setTimeout(() => setCopiedHash(false), 1500)
                       }}
-                      className="rounded border border-zinc-700 bg-zinc-900 px-1.5 py-0.5 text-[10px] text-zinc-300 hover:text-white"
+                      className="rounded border border-[#d6cfc2] bg-[#faf8f4] px-1.5 py-0.5 text-[10px] text-[#57534e] hover:text-[#141413]"
                       title="Copy SHA-256"
                     >
-                      {copiedHash ? <Check className="h-3 w-3 text-emerald-400" /> : <Copy className="h-3 w-3" />}
+                      {copiedHash ? <Check className="h-3 w-3 text-[#0f5132]" /> : <Copy className="h-3 w-3" />}
                     </button>
                   </div>
-                  <p className="font-mono text-[11px] text-zinc-500">
+                  <p className="font-mono text-[11px] text-[#78716c]">
                     BLAKE3: {activeAsset.blake3}
                   </p>
                 </div>
@@ -220,37 +239,38 @@ export function ExpertDesktopView({
 
               <a
                 href={api.bundleUrl(activeAsset.asset_id)}
-                className="flex items-center gap-2 rounded-lg bg-zinc-100 px-3.5 py-2 text-xs font-semibold text-zinc-950 hover:bg-white"
+                className="flex items-center gap-2 rounded-lg bg-[#141413] px-4 py-2.5 text-xs font-semibold text-white shadow-xs transition hover:bg-[#292524]"
               >
                 <Download className="h-3.5 w-3.5" />
                 Export Offline .zip Bundle
               </a>
             </div>
 
-            {/* Hash-Chained Custody Timeline */}
-            <section className="rounded-xl border border-zinc-800 bg-zinc-900/70 p-4">
-              <h3 className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-zinc-400">
-                <Link2 className="h-4 w-4 text-sky-400" />
-                Append-Only Ed25519 Hash-Chained Custody Log ({events.length})
+            {/* Vertical Hash-Chained Custody Timeline */}
+            <section className="rounded-2xl border border-[#ded8cc] bg-white p-5 shadow-2xs">
+              <h3 className="flex items-center gap-2 text-[11px] font-semibold uppercase tracking-wider text-[#6b665c]">
+                <Link2 className="h-4 w-4 text-[#1e3a8a]" />
+                Append-Only Ed25519 Custody Ledger ({events.length} events)
               </h3>
-              <div className="mt-3 space-y-3">
+              <div className="relative mt-4 space-y-3 pl-5 before:absolute before:bottom-3 before:left-2 before:top-3 before:w-px before:bg-[#ded8cc]">
                 {events.map((ev) => (
                   <div
                     key={ev.event_id}
-                    className="rounded-lg border border-zinc-800 bg-zinc-950/80 p-3 text-xs"
+                    className="relative rounded-xl border border-[#e5dfd3] bg-[#faf8f4] p-3.5 text-xs"
                   >
+                    <span className="absolute -left-[17px] top-4 h-2.5 w-2.5 rounded-full border-2 border-white bg-[#0f5132]" />
                     <div className="flex flex-wrap items-center justify-between gap-2">
-                      <span className="font-semibold text-zinc-100">
+                      <span className="font-semibold text-[#141413]">
                         #{ev.seq} · {ev.event_type}: {ev.actor_from} → {ev.actor_to}
                       </span>
-                      <span className="flex items-center gap-1 font-mono text-[11px] text-emerald-400">
+                      <span className="flex items-center gap-1 font-mono text-[11px] text-[#0f5132]">
                         <CheckCircle2 className="h-3 w-3" /> {ev.occurred_at_utc}
                       </span>
                     </div>
-                    <p className="mt-1 text-zinc-400">
-                      {ev.purpose} · <span className="text-zinc-500">{ev.location}</span>
+                    <p className="mt-1 text-[#57534e]">
+                      {ev.purpose} · <span className="text-[#78716c]">{ev.location}</span>
                     </p>
-                    <div className="mt-2 grid grid-cols-1 gap-1 font-mono text-[10px] text-zinc-500">
+                    <div className="mt-2 grid grid-cols-1 gap-0.5 font-mono text-[10px] text-[#78716c]">
                       <div className="truncate">event_hash: {ev.event_hash}</div>
                       <div className="truncate">prev_hash:  {ev.prev_hash}</div>
                     </div>
@@ -261,39 +281,39 @@ export function ExpertDesktopView({
 
             {/* TRACE Advisory Forensics */}
             {forensics && (
-              <section className="rounded-xl border border-zinc-800 bg-zinc-900/70 p-4">
+              <section className="rounded-2xl border border-[#ded8cc] bg-white p-5 shadow-2xs">
                 <div className="flex items-center justify-between">
-                  <h3 className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-zinc-400">
-                    <FileSearch className="h-4 w-4 text-amber-400" />
+                  <h3 className="flex items-center gap-2 text-[11px] font-semibold uppercase tracking-wider text-[#6b665c]">
+                    <FileSearch className="h-4 w-4 text-[#b45309]" />
                     TRACE Media Metadata &amp; Advisory Flags
                   </h3>
-                  <span className="rounded bg-zinc-800 px-2 py-0.5 text-[10px] text-zinc-300">
+                  <span className="rounded-md border border-[#d6cfc2] bg-[#faf8f4] px-2 py-0.5 font-mono text-[10px] text-[#57534e]">
                     advisory_only: true
                   </span>
                 </div>
 
                 <div className="mt-3 grid grid-cols-2 gap-3 text-xs sm:grid-cols-4">
-                  <div className="rounded-lg bg-zinc-950 p-2.5">
-                    <div className="text-[10px] text-zinc-500">Format</div>
-                    <div className="font-mono font-semibold text-zinc-200">
+                  <div className="rounded-xl border border-[#e5dfd3] bg-[#faf8f4] p-3">
+                    <div className="text-[10px] text-[#78716c]">Format</div>
+                    <div className="mt-0.5 font-mono font-semibold text-[#141413]">
                       {forensics.detected_format}
                     </div>
                   </div>
-                  <div className="rounded-lg bg-zinc-950 p-2.5">
-                    <div className="text-[10px] text-zinc-500">Dimensions</div>
-                    <div className="font-mono font-semibold text-zinc-200">
+                  <div className="rounded-xl border border-[#e5dfd3] bg-[#faf8f4] p-3">
+                    <div className="text-[10px] text-[#78716c]">Dimensions</div>
+                    <div className="mt-0.5 font-mono font-semibold text-[#141413]">
                       {forensics.width ? `${forensics.width}×${forensics.height}` : 'N/A'}
                     </div>
                   </div>
-                  <div className="rounded-lg bg-zinc-950 p-2.5">
-                    <div className="text-[10px] text-zinc-500">ELA Mean Diff</div>
-                    <div className="font-mono font-semibold text-zinc-200">
+                  <div className="rounded-xl border border-[#e5dfd3] bg-[#faf8f4] p-3">
+                    <div className="text-[10px] text-[#78716c]">ELA Mean Diff</div>
+                    <div className="mt-0.5 font-mono font-semibold text-[#141413]">
                       {forensics.ela_mean_diff ?? 'N/A'}
                     </div>
                   </div>
-                  <div className="rounded-lg bg-zinc-950 p-2.5">
-                    <div className="text-[10px] text-zinc-500">EXIF Tags</div>
-                    <div className="font-mono font-semibold text-zinc-200">
+                  <div className="rounded-xl border border-[#e5dfd3] bg-[#faf8f4] p-3">
+                    <div className="text-[10px] text-[#78716c]">EXIF Tags</div>
+                    <div className="mt-0.5 font-mono font-semibold text-[#141413]">
                       {Object.keys(forensics.exif).length}
                     </div>
                   </div>
@@ -304,9 +324,9 @@ export function ExpertDesktopView({
                     {forensics.flags.map((flag) => (
                       <div
                         key={flag.code}
-                        className="flex items-start gap-2 rounded-lg border border-amber-500/30 bg-amber-500/10 p-2.5 text-xs text-amber-200"
+                        className="flex items-start gap-2 rounded-xl border border-[#b45309]/25 bg-[#fef3c7]/60 p-3 text-xs text-[#78350f]"
                       >
-                        <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0 text-amber-400" />
+                        <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0 text-[#b45309]" />
                         <div>
                           <span className="font-mono font-semibold">{flag.code}:</span>{' '}
                           {flag.message}
@@ -318,32 +338,32 @@ export function ExpertDesktopView({
               </section>
             )}
 
-            {/* AI Forensic Audit Agent & Section 63(4) Grounded Draft */}
-            <section className="space-y-3 rounded-xl border border-zinc-800 bg-zinc-900/70 p-4">
+            {/* AI Forensic Audit Agent */}
+            <section className="space-y-3 rounded-2xl border border-[#ded8cc] bg-white p-5 shadow-2xs">
               <div className="flex flex-wrap items-center justify-between gap-2">
-                <h3 className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-zinc-400">
-                  <Bot className="h-4 w-4 text-emerald-400" />
-                  AI Forensic Audit Agent &amp; Section 63(4) Draft
+                <h3 className="flex items-center gap-2 text-[11px] font-semibold uppercase tracking-wider text-[#6b665c]">
+                  <Bot className="h-4 w-4 text-[#0f5132]" />
+                  AI Forensic Audit Agent &amp; Grounded Draft
                 </h3>
-                <label className="flex items-center gap-1.5 text-xs text-zinc-400">
+                <label className="flex items-center gap-1.5 text-xs text-[#57534e]">
                   <input
                     type="checkbox"
                     checked={notifyN8n}
                     onChange={(e) => setNotifyN8n(e.target.checked)}
-                    className="rounded border-zinc-700 bg-zinc-950"
+                    className="rounded border-[#c7bfb0]"
                   />
                   Notify Expert via n8n
                 </label>
               </div>
 
               <div className="flex flex-wrap items-center gap-1.5 text-[11px]">
-                <span className="text-zinc-500">Load sample log:</span>
+                <span className="text-[#6b665c]">Load sample log:</span>
                 {Object.entries(SAMPLE_LOGS).map(([key, val]) => (
                   <button
                     key={key}
                     type="button"
                     onClick={() => setLogText(val)}
-                    className="rounded-md border border-zinc-700 bg-zinc-950 px-2 py-0.5 font-mono text-[10px] text-zinc-300 hover:border-emerald-500/50 hover:text-emerald-300"
+                    className="rounded-md border border-[#d6cfc2] bg-[#faf8f4] px-2.5 py-0.5 font-mono text-[10px] font-medium text-[#292524] transition hover:border-[#0f5132] hover:text-[#0f5132]"
                   >
                     {key}
                   </button>
@@ -355,7 +375,7 @@ export function ExpertDesktopView({
                 onChange={(e) => setLogText(e.target.value)}
                 rows={4}
                 placeholder="Optional: Paste acquisition log (dd, ewfacquire, Autopsy, ExifTool JSON, or officer seizure notes)..."
-                className="w-full rounded-lg border border-zinc-700 bg-zinc-950 p-3 font-mono text-xs text-zinc-200"
+                className="w-full rounded-xl border border-[#d6cfc2] bg-[#faf8f4] p-3 font-mono text-xs text-[#141413] placeholder:text-[#a8a29e]"
               />
 
               <button
@@ -372,25 +392,25 @@ export function ExpertDesktopView({
                     })
                     .finally(() => setAuditing(false))
                 }}
-                className="flex items-center gap-2 rounded-lg bg-emerald-600 px-4 py-2 text-xs font-semibold text-white hover:bg-emerald-500 disabled:opacity-40"
+                className="flex items-center gap-2 rounded-lg bg-[#0f5132] px-4 py-2.5 text-xs font-semibold text-white shadow-xs transition hover:bg-[#0c4128] disabled:opacity-40"
               >
                 <Bot className="h-3.5 w-3.5" />
                 {auditing ? 'Auditing & Drafting...' : 'Run AI Audit & Draft Section 63(4)'}
               </button>
 
               {audit && (
-                <div className="space-y-3 border-t border-zinc-800 pt-3 text-xs">
-                  <div className="flex flex-wrap items-center gap-2 text-[11px] text-zinc-400">
-                    <span className="rounded bg-zinc-800 px-2 py-0.5 font-mono text-zinc-200">
+                <div className="space-y-3 border-t border-[#e5dfd3] pt-3 text-xs">
+                  <div className="flex flex-wrap items-center gap-2 text-[11px]">
+                    <span className="rounded-md border border-[#d6cfc2] bg-[#faf8f4] px-2 py-0.5 font-mono text-[#292524]">
                       drafter: {audit.drafter_mode}
                     </span>
                     {audit.parsed_log && (
-                      <span className="rounded bg-zinc-800 px-2 py-0.5 font-mono text-zinc-200">
+                      <span className="rounded-md border border-[#d6cfc2] bg-[#faf8f4] px-2 py-0.5 font-mono text-[#292524]">
                         log_format: {audit.parsed_log.format_detected}
                       </span>
                     )}
                     {audit.n8n_notification && (
-                      <span className="rounded bg-emerald-500/20 px-2 py-0.5 text-emerald-300">
+                      <span className="rounded-md border border-[#0f5132]/25 bg-[#0f5132]/10 px-2 py-0.5 font-medium text-[#0f5132]">
                         n8n: {audit.n8n_notification.delivered ? 'Telegram Sent' : 'Skipped'}
                       </span>
                     )}
@@ -401,75 +421,80 @@ export function ExpertDesktopView({
                       {audit.flags.map((fl, idx) => (
                         <div
                           key={`${fl.code}-${idx}`}
-                          className="rounded-lg border border-amber-500/30 bg-amber-500/10 p-2 text-amber-200"
+                          className="rounded-xl border border-[#b45309]/25 bg-[#fef3c7]/60 p-2.5 text-[#78350f]"
                         >
                           <span className="font-mono font-semibold">{fl.code}</span>{' '}
-                          <span className="font-mono text-[10px] text-amber-300">{fl.citation}</span>
-                          <div>{fl.message}</div>
+                          <span className="font-mono text-[10px] text-[#92400e]">{fl.citation}</span>
+                          <div className="mt-0.5">{fl.message}</div>
                         </div>
                       ))}
                     </div>
                   )}
 
-                  <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
-                    <div className="rounded-lg border border-zinc-800 bg-zinc-950 p-3">
-                      <div className="mb-1 text-[10px] font-semibold uppercase tracking-wider text-zinc-400">
-                        Part A Draft (Custodian)
-                      </div>
-                      <p className="leading-relaxed text-zinc-200">{audit.part_a_draft}</p>
-                    </div>
-                    <div className="rounded-lg border border-zinc-800 bg-zinc-950 p-3">
-                      <div className="mb-1 text-[10px] font-semibold uppercase tracking-wider text-zinc-400">
-                        Part B Draft (Expert)
-                      </div>
-                      <p className="leading-relaxed text-zinc-200">{audit.part_b_draft}</p>
-                    </div>
-                  </div>
-                  <p className="text-[11px] italic text-zinc-500">{audit.disclaimer}</p>
+                  <p className="text-[11px] italic text-[#78716c]">{audit.disclaimer}</p>
                 </div>
               )}
             </section>
 
-            {/* Human Expert Sign-Off & BSA Section 63(4) PDF */}
-            <section className="space-y-3 rounded-xl border border-zinc-800 bg-zinc-900/70 p-4">
-              <h3 className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-zinc-400">
-                <ShieldCheck className="h-4 w-4 text-sky-400" />
-                Human Expert Sign-Off &amp; BSA Section 63(4) PDF
-              </h3>
+            {/* Statutory Section 63(4) Instrument & Human Sign-Off */}
+            <section className="space-y-4 rounded-2xl border border-[#ded8cc] bg-white p-5 shadow-2xs">
+              <div className="flex items-center justify-between border-b border-[#e5dfd3] pb-3">
+                <div>
+                  <h3 className="font-serif-display text-xl text-[#141413]">
+                    Statutory Certificate — BSA Section 63(4)
+                  </h3>
+                  <p className="text-[11px] text-[#6b665c]">
+                    Review grounded drafts, edit if required, and apply human expert sign-off.
+                  </p>
+                </div>
+                <span className="rounded-md border border-[#1e3a8a]/25 bg-[#1e3a8a]/5 px-2.5 py-1 font-mono text-[10px] font-semibold text-[#1e3a8a]">
+                  HUMAN SIGN-OFF REQUIRED
+                </span>
+              </div>
 
-              <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
+              <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
                 <input
                   value={custodianName}
                   onChange={(e) => setCustodianName(e.target.value)}
                   placeholder="Part A Custodian Name"
-                  className="rounded-lg border border-zinc-700 bg-zinc-950 px-3 py-2 text-xs text-zinc-100"
+                  className="rounded-lg border border-[#d6cfc2] bg-[#faf8f4] px-3 py-2 text-xs text-[#141413]"
                 />
                 <input
                   value={expertName}
                   onChange={(e) => setExpertName(e.target.value)}
                   placeholder="Part B Certifying Expert Name"
-                  className="rounded-lg border border-zinc-700 bg-zinc-950 px-3 py-2 text-xs text-zinc-100"
+                  className="rounded-lg border border-[#d6cfc2] bg-[#faf8f4] px-3 py-2 text-xs text-[#141413]"
                 />
               </div>
 
               <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
-                <textarea
-                  value={partAText}
-                  onChange={(e) => setPartAText(e.target.value)}
-                  rows={3}
-                  placeholder="Part A Declaration text (auto-filled by AI Audit or edit manually)..."
-                  className="rounded-lg border border-zinc-700 bg-zinc-950 p-2.5 text-xs text-zinc-200"
-                />
-                <textarea
-                  value={partBText}
-                  onChange={(e) => setPartBText(e.target.value)}
-                  rows={3}
-                  placeholder="Part B Expert Certification text (auto-filled by AI Audit or edit manually)..."
-                  className="rounded-lg border border-zinc-700 bg-zinc-950 p-2.5 text-xs text-zinc-200"
-                />
+                <div className="space-y-1">
+                  <div className="text-[10px] font-semibold uppercase tracking-wider text-[#b45309]">
+                    Part A · Custodian Declaration
+                  </div>
+                  <textarea
+                    value={partAText}
+                    onChange={(e) => setPartAText(e.target.value)}
+                    rows={4}
+                    placeholder="Part A Declaration text (auto-filled by AI Audit or edit manually)..."
+                    className="w-full rounded-xl border border-[#d6cfc2] bg-[#faf8f4] p-3 text-xs leading-relaxed text-[#141413]"
+                  />
+                </div>
+                <div className="space-y-1">
+                  <div className="text-[10px] font-semibold uppercase tracking-wider text-[#1e3a8a]">
+                    Part B · Expert Certification
+                  </div>
+                  <textarea
+                    value={partBText}
+                    onChange={(e) => setPartBText(e.target.value)}
+                    rows={4}
+                    placeholder="Part B Expert Certification text (auto-filled by AI Audit or edit manually)..."
+                    className="w-full rounded-xl border border-[#d6cfc2] bg-[#faf8f4] p-3 text-xs leading-relaxed text-[#141413]"
+                  />
+                </div>
               </div>
 
-              <div className="flex flex-wrap items-center gap-3">
+              <div className="flex flex-wrap items-center gap-3 pt-1">
                 <button
                   type="button"
                   disabled={signing || partAText.length < 10 || partBText.length < 10}
@@ -491,7 +516,7 @@ export function ExpertDesktopView({
                       })
                       .finally(() => setSigning(false))
                   }}
-                  className="flex items-center gap-2 rounded-lg bg-sky-600 px-4 py-2 text-xs font-semibold text-white hover:bg-sky-500 disabled:opacity-40"
+                  className="flex items-center gap-2 rounded-lg bg-[#1e3a8a] px-4 py-2.5 text-xs font-semibold text-white shadow-xs transition hover:bg-[#172e6e] disabled:opacity-40"
                 >
                   <ShieldCheck className="h-3.5 w-3.5" />
                   {signing ? 'Signing & Sealing PDF...' : 'Sign Part B & Seal Section 63(4) PDF'}
@@ -502,7 +527,7 @@ export function ExpertDesktopView({
                     href={api.certificatePdfUrl(activeAsset.asset_id)}
                     target="_blank"
                     rel="noreferrer"
-                    className="flex items-center gap-1.5 rounded-lg border border-emerald-500/40 bg-emerald-500/15 px-3 py-2 text-xs font-semibold text-emerald-300 hover:bg-emerald-500/25"
+                    className="flex items-center gap-1.5 rounded-lg border border-[#0f5132]/30 bg-[#0f5132]/10 px-3.5 py-2.5 text-xs font-semibold text-[#0f5132] hover:bg-[#0f5132]/15"
                   >
                     <Download className="h-3.5 w-3.5" />
                     Download Section 63(4) PDF ({signedCert.cert_id})
