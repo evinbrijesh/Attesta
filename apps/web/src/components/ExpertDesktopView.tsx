@@ -139,7 +139,7 @@ export function ExpertDesktopView({
                 }`}
               >
                 <div className="font-semibold">{c.title}</div>
-                <div className="mt-0.5 font-mono text-[10px] text-[#78716c]">{c.case_id}</div>
+                <div className="mt-0.5 font-mono text-[10px] text-[#57534e]">{c.case_id}</div>
               </button>
             ))}
           </div>
@@ -154,7 +154,7 @@ export function ExpertDesktopView({
           </div>
           <div className="mt-3 space-y-2">
             {assets.length === 0 && (
-              <p className="text-xs text-[#78716c]">No evidence assets ingested for this case.</p>
+              <p className="text-xs text-[#57534e]">No evidence assets ingested for this case.</p>
             )}
             {assets.map((a) => (
               <button
@@ -168,7 +168,7 @@ export function ExpertDesktopView({
                 }`}
               >
                 <div className="font-semibold">{a.filename}</div>
-                <div className="mt-0.5 truncate font-mono text-[10px] text-[#78716c]">
+                <div className="mt-0.5 truncate font-mono text-[10px] text-[#57534e]">
                   SHA-256: {a.sha256}
                 </div>
               </button>
@@ -248,7 +248,7 @@ export function ExpertDesktopView({
                       )}
                     </button>
                   </div>
-                  <p className="font-mono text-[11px] text-[#78716c]">
+                  <p className="font-mono text-[11px] text-[#57534e]">
                     BLAKE3: {activeAsset.blake3}
                   </p>
                 </div>
@@ -285,9 +285,9 @@ export function ExpertDesktopView({
                       </span>
                     </div>
                     <p className="mt-1 text-[#57534e]">
-                      {ev.purpose} · <span className="text-[#78716c]">{ev.location}</span>
+                      {ev.purpose} · <span className="text-[#57534e]">{ev.location}</span>
                     </p>
-                    <div className="mt-2 grid grid-cols-1 gap-0.5 font-mono text-[10px] text-[#78716c]">
+                    <div className="mt-2 grid grid-cols-1 gap-0.5 font-mono text-[10px] text-[#57534e]">
                       <div className="truncate">event_hash: {ev.event_hash}</div>
                       <div className="truncate">prev_hash:  {ev.prev_hash}</div>
                     </div>
@@ -311,25 +311,25 @@ export function ExpertDesktopView({
 
                 <div className="mt-3 grid grid-cols-2 gap-3 text-xs sm:grid-cols-4">
                   <div className="rounded-xl border border-[#e5dfd3] bg-[#faf8f4] p-3">
-                    <div className="text-[10px] text-[#78716c]">Format</div>
+                    <div className="text-[10px] text-[#57534e]">Format</div>
                     <div className="mt-0.5 font-mono font-semibold text-[#141413]">
                       {forensics.detected_format}
                     </div>
                   </div>
                   <div className="rounded-xl border border-[#e5dfd3] bg-[#faf8f4] p-3">
-                    <div className="text-[10px] text-[#78716c]">Dimensions</div>
+                    <div className="text-[10px] text-[#57534e]">Dimensions</div>
                     <div className="mt-0.5 font-mono font-semibold text-[#141413]">
                       {forensics.width ? `${forensics.width}×${forensics.height}` : 'N/A'}
                     </div>
                   </div>
                   <div className="rounded-xl border border-[#e5dfd3] bg-[#faf8f4] p-3">
-                    <div className="text-[10px] text-[#78716c]">ELA Mean Diff</div>
+                    <div className="text-[10px] text-[#57534e]">ELA Mean Diff</div>
                     <div className="mt-0.5 font-mono font-semibold text-[#141413]">
                       {forensics.ela_mean_diff ?? 'N/A'}
                     </div>
                   </div>
                   <div className="rounded-xl border border-[#e5dfd3] bg-[#faf8f4] p-3">
-                    <div className="text-[10px] text-[#78716c]">EXIF Tags</div>
+                    <div className="text-[10px] text-[#57534e]">EXIF Tags</div>
                     <div className="mt-0.5 font-mono font-semibold text-[#141413]">
                       {Object.keys(forensics.exif).length}
                     </div>
@@ -448,7 +448,7 @@ export function ExpertDesktopView({
                     </div>
                   )}
 
-                  <p className="text-[11px] italic text-[#78716c]">{audit.disclaimer}</p>
+                  <p className="text-[11px] italic text-[#57534e]">{audit.disclaimer}</p>
                 </div>
               )}
             </section>

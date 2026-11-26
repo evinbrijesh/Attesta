@@ -102,11 +102,11 @@ export function MobileFieldView({
     <div className="space-y-4 p-4 text-[#141413]">
       {/* 3-Step Intake Progress */}
       <div className="flex items-center justify-between border-b border-[#e5dfd3] pb-3 font-mono text-[10px] font-medium">
-        <span className={step >= 1 ? 'text-[#0f5132]' : 'text-[#78716c]'}>1. CASE</span>
+        <span className={step >= 1 ? 'text-[#0f5132]' : 'text-[#57534e]'}>1. CASE</span>
         <span className="text-[#d6cfc2]" aria-hidden="true">/</span>
-        <span className={step >= 2 ? 'text-[#0f5132]' : 'text-[#78716c]'}>2. FINGERPRINT</span>
+        <span className={step >= 2 ? 'text-[#0f5132]' : 'text-[#57534e]'}>2. FINGERPRINT</span>
         <span className="text-[#d6cfc2]" aria-hidden="true">/</span>
-        <span className={step >= 3 ? 'text-[#0f5132]' : 'text-[#78716c]'}>3. QR SEAL</span>
+        <span className={step >= 3 ? 'text-[#0f5132]' : 'text-[#57534e]'}>3. QR SEAL</span>
       </div>
 
       <div className="rounded-xl border border-[#b45309]/25 bg-[#fef3c7]/60 px-3 py-2 text-[11px] leading-relaxed text-[#78350f]">

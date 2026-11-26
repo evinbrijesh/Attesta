@@ -79,7 +79,7 @@ export default function App() {
     <MotionConfig reducedMotion="user">
       <div className="min-h-screen bg-[#f6f4ef] text-[#141413] selection:bg-[#0f5132]/15">
         {/* Editorial Top Bar */}
-        <header className="sticky top-0 z-30 border-b border-[#ded8cc] bg-[#f6f4ef]/95 backdrop-blur-sm">
+        <header className="z-30 border-b border-[#ded8cc] bg-[#f6f4ef]/95 backdrop-blur-sm sm:sticky sm:top-0">
           <div className="mx-auto flex max-w-6xl flex-wrap items-center justify-between gap-3 px-4 py-3">
             <div className="flex items-center gap-3">
               <div className="flex h-10 w-10 items-center justify-center rounded-xl border border-[#141413]/15 bg-[#141413] text-[#f6f4ef]">
@@ -125,7 +125,7 @@ export default function App() {
               <button
                 type="button"
                 onClick={() => openLegalDrawer(false)}
-                className="flex min-h-[40px] items-center gap-1.5 rounded-lg border border-[#d6cfc2] bg-white px-3 py-1.5 text-xs font-medium text-[#292524] transition hover:border-[#141413]/40"
+                className="flex min-h-[44px] items-center gap-1.5 rounded-lg border border-[#d6cfc2] bg-white px-3 py-1.5 text-xs font-medium text-[#292524] transition hover:border-[#141413]/40"
               >
                 <BookOpen className="h-3.5 w-3.5 text-[#b45309]" aria-hidden="true" />
                 <span className="hidden sm:inline">BSA §63(4) Statute</span>
@@ -137,7 +137,7 @@ export default function App() {
                   type="button"
                   aria-pressed={mode === 'mobile'}
                   onClick={() => setMode('mobile')}
-                  className={`relative z-10 flex min-h-[36px] items-center gap-1.5 rounded-md px-3 py-1 text-xs font-medium transition-colors ${
+                  className={`relative z-10 flex min-h-[40px] items-center gap-1.5 rounded-md px-3 py-1 text-xs font-medium transition-colors ${
                     mode === 'mobile' ? 'text-white' : 'text-[#57534e] hover:text-[#141413]'
                   }`}
                 >
@@ -155,7 +155,7 @@ export default function App() {
                   type="button"
                   aria-pressed={mode === 'desktop'}
                   onClick={() => setMode('desktop')}
-                  className={`relative z-10 flex min-h-[36px] items-center gap-1.5 rounded-md px-3 py-1 text-xs font-medium transition-colors ${
+                  className={`relative z-10 flex min-h-[40px] items-center gap-1.5 rounded-md px-3 py-1 text-xs font-medium transition-colors ${
                     mode === 'desktop' ? 'text-white' : 'text-[#57534e] hover:text-[#141413]'
                   }`}
                 >
