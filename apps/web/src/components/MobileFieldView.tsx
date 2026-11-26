@@ -102,11 +102,11 @@ export function MobileFieldView({
     <div className="space-y-4 p-4 text-[#141413]">
       {/* 3-Step Intake Progress */}
       <div className="flex items-center justify-between border-b border-[#e5dfd3] pb-3 font-mono text-[10px] font-medium">
-        <span className={step >= 1 ? 'text-[#0f5132]' : 'text-[#a8a29e]'}>1. CASE</span>
-        <span className="text-[#d6cfc2]">—</span>
-        <span className={step >= 2 ? 'text-[#0f5132]' : 'text-[#a8a29e]'}>2. FINGERPRINT</span>
-        <span className="text-[#d6cfc2]">—</span>
-        <span className={step >= 3 ? 'text-[#0f5132]' : 'text-[#a8a29e]'}>3. QR SEAL</span>
+        <span className={step >= 1 ? 'text-[#0f5132]' : 'text-[#78716c]'}>1. CASE</span>
+        <span className="text-[#d6cfc2]" aria-hidden="true">/</span>
+        <span className={step >= 2 ? 'text-[#0f5132]' : 'text-[#78716c]'}>2. FINGERPRINT</span>
+        <span className="text-[#d6cfc2]" aria-hidden="true">/</span>
+        <span className={step >= 3 ? 'text-[#0f5132]' : 'text-[#78716c]'}>3. QR SEAL</span>
       </div>
 
       <div className="rounded-xl border border-[#b45309]/25 bg-[#fef3c7]/60 px-3 py-2 text-[11px] leading-relaxed text-[#78350f]">
@@ -115,16 +115,17 @@ export function MobileFieldView({
       </div>
 
       {/* Case Selection */}
-      <div className="space-y-2 rounded-xl border border-[#ded8cc] bg-white p-3.5 shadow-2xs">
-        <label className="block text-[10px] font-semibold uppercase tracking-wider text-[#6b665c]">
+      <div className="space-y-2 rounded-xl border border-[#ded8cc] bg-white p-3.5">
+        <label htmlFor="mobile-case-select" className="block text-[10px] font-semibold uppercase tracking-wider text-[#57534e]">
           Active Case Dossier
         </label>
         <select
+          id="mobile-case-select"
           value={selectedCaseId}
           onChange={(e) => onSelectCase(e.target.value)}
-          className="w-full rounded-lg border border-[#d6cfc2] bg-[#faf8f4] px-3 py-2 text-xs font-medium text-[#141413]"
+          className="min-h-[44px] w-full rounded-lg border border-[#d6cfc2] bg-[#faf8f4] px-3 py-2 text-xs font-medium text-[#141413]"
         >
-          <option value="">-- Select a case --</option>
+          <option value="">Select a case</option>
           {cases.map((c) => (
             <option key={c.case_id} value={c.case_id}>
               {c.title} ({c.case_id})
@@ -133,16 +134,17 @@ export function MobileFieldView({
         </select>
         <div className="flex gap-2">
           <input
+            aria-label="New case title"
             value={newTitle}
             onChange={(e) => setNewTitle(e.target.value)}
             placeholder="New case title (e.g. Case 2026-BLR-09)"
-            className="flex-1 rounded-lg border border-[#d6cfc2] bg-[#faf8f4] px-3 py-1.5 text-xs text-[#141413] placeholder:text-[#a8a29e]"
+            className="min-h-[44px] flex-1 rounded-lg border border-[#d6cfc2] bg-[#faf8f4] px-3 py-2 text-xs text-[#141413] placeholder:text-[#78716c]"
           />
           <button
             type="button"
             onClick={handleCreateCase}
             disabled={busy || !newTitle.trim()}
-            className="rounded-lg bg-[#141413] px-3 py-1.5 text-xs font-medium text-white hover:bg-[#292524] disabled:opacity-40"
+            className="min-h-[44px] rounded-lg bg-[#141413] px-3.5 py-2 text-xs font-medium text-white hover:bg-[#292524] disabled:opacity-40"
           >
             + Case
           </button>

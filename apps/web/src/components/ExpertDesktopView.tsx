@@ -60,6 +60,8 @@ export function ExpertDesktopView({
   const [signedCert, setSignedCert] = useState<{ cert_id: string; pdf_sha256: string; signed_at_utc: string } | null>(null)
   const [signing, setSigning] = useState(false)
   const [loading, setLoading] = useState(false)
+  const [loadError, setLoadError] = useState('')
+  const [actionError, setActionError] = useState('')
   const [copiedHash, setCopiedHash] = useState(false)
 
   useEffect(() => {
@@ -67,12 +69,15 @@ export function ExpertDesktopView({
       setAssets([])
       return
     }
-    void api.listAssets(selectedCaseId).then((list) => {
-      setAssets(list)
-      if (list.length > 0 && !list.some((a) => a.asset_id === selectedAssetId)) {
-        onSelectAsset(list[0].asset_id)
-      }
-    })
+    void api
+      .listAssets(selectedCaseId)
+      .then((list) => {
+        setAssets(list)
+        if (list.length > 0 && !list.some((a) => a.asset_id === selectedAssetId)) {
+          onSelectAsset(list[0].asset_id)
+        }
+      })
+      .catch((e) => setLoadError(e instanceof Error ? e.message : 'Failed to load assets'))
   }, [selectedCaseId, refreshKey, selectedAssetId, onSelectAsset])
 
   useEffect(() => {
@@ -80,6 +85,8 @@ export function ExpertDesktopView({
     setPartAText('')
     setPartBText('')
     setSignedCert(null)
+    setActionError('')
+    setLoadError('')
     if (!selectedAssetId) {
       setEvents([])
       setVerify(null)
@@ -97,6 +104,7 @@ export function ExpertDesktopView({
         setVerify(ver)
         setForensics(fx)
       })
+      .catch((e) => setLoadError(e instanceof Error ? e.message : 'Failed to load asset dossier'))
       .finally(() => setLoading(false))
   }, [selectedAssetId, refreshKey])
 
@@ -171,6 +179,11 @@ export function ExpertDesktopView({
 
       {/* Main Forensic Dossier Workspace */}
       <main className="space-y-5 lg:col-span-8">
+        {loadError && (
+          <div role="alert" className="rounded-xl border border-red-600/30 bg-red-50 p-3 text-xs text-red-700">
+            {loadError}
+          </div>
+        )}
         {!activeAsset ? (
           <div className="rounded-2xl border border-dashed border-[#c7bfb0] bg-white/70 p-12 text-center">
             <Scale className="mx-auto h-8 w-8 text-[#a8a29e]" />
@@ -220,15 +233,19 @@ export function ExpertDesktopView({
                     <span className="truncate">SHA-256: {activeAsset.sha256}</span>
                     <button
                       type="button"
+                      aria-label={copiedHash ? 'SHA-256 copied' : 'Copy SHA-256'}
                       onClick={() => {
                         void navigator.clipboard.writeText(activeAsset.sha256)
                         setCopiedHash(true)
                         setTimeout(() => setCopiedHash(false), 1500)
                       }}
                       className="rounded border border-[#d6cfc2] bg-[#faf8f4] px-1.5 py-0.5 text-[10px] text-[#57534e] hover:text-[#141413]"
-                      title="Copy SHA-256"
                     >
-                      {copiedHash ? <Check className="h-3 w-3 text-[#0f5132]" /> : <Copy className="h-3 w-3" />}
+                      {copiedHash ? (
+                        <Check className="h-3 w-3 text-[#0f5132]" aria-hidden="true" />
+                      ) : (
+                        <Copy className="h-3 w-3" aria-hidden="true" />
+                      )}
                     </button>
                   </div>
                   <p className="font-mono text-[11px] text-[#78716c]">
@@ -441,9 +458,9 @@ export function ExpertDesktopView({
               <div className="flex items-center justify-between border-b border-[#e5dfd3] pb-3">
                 <div>
                   <h3 className="font-serif-display text-xl text-[#141413]">
-                    Statutory Certificate — BSA Section 63(4)
+                    Statutory Certificate: BSA Section 63(4)
                   </h3>
-                  <p className="text-[11px] text-[#6b665c]">
+                  <p className="text-[11px] text-[#57534e]">
                     Review grounded drafts, edit if required, and apply human expert sign-off.
                   </p>
                 </div>
@@ -452,27 +469,46 @@ export function ExpertDesktopView({
                 </span>
               </div>
 
+              {actionError && (
+                <div role="alert" className="rounded-xl border border-red-600/30 bg-red-50 p-3 text-xs text-red-700">
+                  {actionError}
+                </div>
+              )}
+
               <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-                <input
-                  value={custodianName}
-                  onChange={(e) => setCustodianName(e.target.value)}
-                  placeholder="Part A Custodian Name"
-                  className="rounded-lg border border-[#d6cfc2] bg-[#faf8f4] px-3 py-2 text-xs text-[#141413]"
-                />
-                <input
-                  value={expertName}
-                  onChange={(e) => setExpertName(e.target.value)}
-                  placeholder="Part B Certifying Expert Name"
-                  className="rounded-lg border border-[#d6cfc2] bg-[#faf8f4] px-3 py-2 text-xs text-[#141413]"
-                />
+                <div>
+                  <label htmlFor="s63-custodian-name" className="mb-1 block text-[10px] font-semibold uppercase tracking-wider text-[#57534e]">
+                    Part A Custodian Name *
+                  </label>
+                  <input
+                    id="s63-custodian-name"
+                    value={custodianName}
+                    onChange={(e) => setCustodianName(e.target.value)}
+                    placeholder="Custodian full name"
+                    className="w-full rounded-lg border border-[#d6cfc2] bg-[#faf8f4] px-3 py-2 text-xs text-[#141413]"
+                  />
+                </div>
+                <div>
+                  <label htmlFor="s63-expert-name" className="mb-1 block text-[10px] font-semibold uppercase tracking-wider text-[#57534e]">
+                    Part B Certifying Expert Name *
+                  </label>
+                  <input
+                    id="s63-expert-name"
+                    value={expertName}
+                    onChange={(e) => setExpertName(e.target.value)}
+                    placeholder="Forensic expert full name"
+                    className="w-full rounded-lg border border-[#d6cfc2] bg-[#faf8f4] px-3 py-2 text-xs text-[#141413]"
+                  />
+                </div>
               </div>
 
               <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
                 <div className="space-y-1">
-                  <div className="text-[10px] font-semibold uppercase tracking-wider text-[#b45309]">
+                  <label htmlFor="s63-part-a" className="block text-[10px] font-semibold uppercase tracking-wider text-[#b45309]">
                     Part A · Custodian Declaration
-                  </div>
+                  </label>
                   <textarea
+                    id="s63-part-a"
                     value={partAText}
                     onChange={(e) => setPartAText(e.target.value)}
                     rows={4}
@@ -481,10 +517,11 @@ export function ExpertDesktopView({
                   />
                 </div>
                 <div className="space-y-1">
-                  <div className="text-[10px] font-semibold uppercase tracking-wider text-[#1e3a8a]">
+                  <label htmlFor="s63-part-b" className="block text-[10px] font-semibold uppercase tracking-wider text-[#1e3a8a]">
                     Part B · Expert Certification
-                  </div>
+                  </label>
                   <textarea
+                    id="s63-part-b"
                     value={partBText}
                     onChange={(e) => setPartBText(e.target.value)}
                     rows={4}
@@ -506,6 +543,7 @@ export function ExpertDesktopView({
                   }
                   onClick={() => {
                     setSigning(true)
+                    setActionError('')
                     void api
                       .signSection63(activeAsset.asset_id, {
                         custodian_name: custodianName,
@@ -520,11 +558,12 @@ export function ExpertDesktopView({
                         setSignedCert(res)
                         void api.listEvents(activeAsset.asset_id).then(setEvents)
                       })
+                      .catch((e) => setActionError(e instanceof Error ? e.message : 'Failed to sign certificate'))
                       .finally(() => setSigning(false))
                   }}
-                  className="flex items-center gap-2 rounded-lg bg-[#1e3a8a] px-4 py-2.5 text-xs font-semibold text-white shadow-xs transition hover:bg-[#172e6e] disabled:opacity-40"
+                  className="flex min-h-[40px] items-center gap-2 rounded-lg bg-[#1e3a8a] px-4 py-2 text-xs font-semibold text-white transition hover:bg-[#172e6e] disabled:opacity-40"
                 >
-                  <ShieldCheck className="h-3.5 w-3.5" />
+                  <ShieldCheck className="h-3.5 w-3.5" aria-hidden="true" />
                   {signing ? 'Signing & Sealing PDF...' : 'Sign Part B & Seal Section 63(4) PDF'}
                 </button>
 
