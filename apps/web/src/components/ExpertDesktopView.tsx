@@ -53,8 +53,8 @@ export function ExpertDesktopView({
   const [notifyN8n, setNotifyN8n] = useState(true)
   const [audit, setAudit] = useState<AuditResponse | null>(null)
   const [auditing, setAuditing] = useState(false)
-  const [custodianName, setCustodianName] = useState('SI Rajesh Kumar')
-  const [expertName, setExpertName] = useState('Dr. Ananya Rao')
+  const [custodianName, setCustodianName] = useState('')
+  const [expertName, setExpertName] = useState('')
   const [partAText, setPartAText] = useState('')
   const [partBText, setPartBText] = useState('')
   const [signedCert, setSignedCert] = useState<{ cert_id: string; pdf_sha256: string; signed_at_utc: string } | null>(null)
@@ -497,7 +497,13 @@ export function ExpertDesktopView({
               <div className="flex flex-wrap items-center gap-3 pt-1">
                 <button
                   type="button"
-                  disabled={signing || partAText.length < 10 || partBText.length < 10}
+                  disabled={
+                    signing ||
+                    !custodianName.trim() ||
+                    !expertName.trim() ||
+                    partAText.length < 10 ||
+                    partBText.length < 10
+                  }
                   onClick={() => {
                     setSigning(true)
                     void api

@@ -19,13 +19,13 @@ export function MobileFieldView({
   onAssetUpdated,
 }: Props) {
   const [newTitle, setNewTitle] = useState('')
-  const [custodian, setCustodian] = useState('SI Rajesh Kumar (Cyber PS)')
-  const [location, setLocation] = useState('Whitefield, Bengaluru')
-  const [purpose, setPurpose] = useState('Initial field seizure & BSA S.63 Part A')
+  const [custodian, setCustodian] = useState('')
+  const [location, setLocation] = useState('')
+  const [purpose, setPurpose] = useState('')
   const [file, setFile] = useState<File | null>(null)
   const [clientSha, setClientSha] = useState<string>('')
   const [ingestResult, setIngestResult] = useState<IngestResponse | null>(null)
-  const [handoffTo, setHandoffTo] = useState('FSL Forensic Examiner')
+  const [handoffTo, setHandoffTo] = useState('')
   const [handoffStatus, setHandoffStatus] = useState<string>('')
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState('')
@@ -178,31 +178,46 @@ export function MobileFieldView({
           </div>
         )}
 
-        <div className="grid grid-cols-1 gap-2">
-          <input
-            value={custodian}
-            onChange={(e) => setCustodian(e.target.value)}
-            placeholder="Custodian Name / Rank"
-            className="rounded-lg border border-[#d6cfc2] bg-[#faf8f4] px-3 py-2 text-xs text-[#141413]"
-          />
-          <input
-            value={location}
-            onChange={(e) => setLocation(e.target.value)}
-            placeholder="Seizure Location"
-            className="rounded-lg border border-[#d6cfc2] bg-[#faf8f4] px-3 py-2 text-xs text-[#141413]"
-          />
-          <input
-            value={purpose}
-            onChange={(e) => setPurpose(e.target.value)}
-            placeholder="Purpose"
-            className="rounded-lg border border-[#d6cfc2] bg-[#faf8f4] px-3 py-2 text-xs text-[#141413]"
-          />
+        <div className="grid grid-cols-1 gap-2.5">
+          <div>
+            <label className="mb-1 block text-[10px] font-semibold uppercase tracking-wider text-[#6b665c]">
+              Custodian (Part A) *
+            </label>
+            <input
+              value={custodian}
+              onChange={(e) => setCustodian(e.target.value)}
+              placeholder="Who is in lawful control of this file?"
+              className="w-full rounded-lg border border-[#d6cfc2] bg-[#faf8f4] px-3 py-2 text-xs text-[#141413] placeholder:text-[#a8a29e]"
+            />
+          </div>
+          <div>
+            <label className="mb-1 block text-[10px] font-semibold uppercase tracking-wider text-[#6b665c]">
+              Collection Location
+            </label>
+            <input
+              value={location}
+              onChange={(e) => setLocation(e.target.value)}
+              placeholder="Where was the evidence collected?"
+              className="w-full rounded-lg border border-[#d6cfc2] bg-[#faf8f4] px-3 py-2 text-xs text-[#141413] placeholder:text-[#a8a29e]"
+            />
+          </div>
+          <div>
+            <label className="mb-1 block text-[10px] font-semibold uppercase tracking-wider text-[#6b665c]">
+              Purpose / Context
+            </label>
+            <input
+              value={purpose}
+              onChange={(e) => setPurpose(e.target.value)}
+              placeholder="Reason for intake (e.g. seizure, preservation)"
+              className="w-full rounded-lg border border-[#d6cfc2] bg-[#faf8f4] px-3 py-2 text-xs text-[#141413] placeholder:text-[#a8a29e]"
+            />
+          </div>
         </div>
 
         <button
           type="button"
           onClick={() => void handleIngest()}
-          disabled={busy || !selectedCaseId || !file}
+          disabled={busy || !selectedCaseId || !file || !custodian.trim()}
           className="flex w-full items-center justify-center gap-2 rounded-lg bg-[#0f5132] px-4 py-2.5 text-xs font-semibold text-white shadow-xs transition hover:bg-[#0c4128] disabled:opacity-40"
         >
           <ShieldCheck className="h-4 w-4" />
@@ -253,13 +268,14 @@ export function MobileFieldView({
               <input
                 value={handoffTo}
                 onChange={(e) => setHandoffTo(e.target.value)}
-                className="flex-1 rounded-lg border border-[#d6cfc2] bg-[#faf8f4] px-2.5 py-1.5 text-xs text-[#141413]"
+                placeholder="Recipient (e.g. Forensic Lab / Advocate)"
+                className="flex-1 rounded-lg border border-[#d6cfc2] bg-[#faf8f4] px-2.5 py-1.5 text-xs text-[#141413] placeholder:text-[#a8a29e]"
               />
               <button
                 type="button"
                 onClick={() => void handleHandoff()}
-                disabled={busy}
-                className="flex items-center gap-1 rounded-lg bg-[#141413] px-3 py-1.5 text-xs font-semibold text-white hover:bg-[#292524]"
+                disabled={busy || !handoffTo.trim()}
+                className="flex items-center gap-1 rounded-lg bg-[#141413] px-3 py-1.5 text-xs font-semibold text-white hover:bg-[#292524] disabled:opacity-40"
               >
                 <Send className="h-3 w-3" /> Send
               </button>
