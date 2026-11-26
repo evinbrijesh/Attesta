@@ -172,4 +172,15 @@ export const api = {
     }),
   certificatePdfUrl: (assetId: string) => `/api/assets/${assetId}/certificate.pdf`,
   bundleUrl: (assetId: string) => `/api/assets/${assetId}/bundle`,
+  health: () => req<{ status: string; service: string }>('/api/health'),
+  getLegalReference: (refresh = false) =>
+    req<{
+      provider: string
+      statute: string
+      effective_date: string
+      landmark_ruling: string
+      requirements: string[]
+      sources: string[]
+      excerpt?: string
+    }>(`/api/legal/section63?refresh=${refresh}`),
 }

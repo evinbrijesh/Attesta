@@ -2,7 +2,9 @@ import { useEffect, useState } from 'react'
 import {
   AlertTriangle,
   Bot,
+  Check,
   CheckCircle2,
+  Copy,
   Download,
   FileSearch,
   Link2,
@@ -18,6 +20,12 @@ import {
   type ForensicsResponse,
   type VerifyResponse,
 } from '../api'
+
+const SAMPLE_LOGS: Record<string, string> = {
+  dd: `[2026-11-24T04:15:00Z] OPERATOR: SI Rajesh Kumar (Cyber PS Whitefield)\n[2026-11-24T04:15:02Z] COMMAND: dd if=/dev/sdb1 of=/mnt/vault/cctv_gate_01.raw bs=4M\n[2026-11-24T04:15:15Z] WRITE_BLOCKER: Tableau T8u USB 3.0 Forensic Bridge\n[2026-11-24T04:15:18Z] SHA256(cctv_gate_01.raw): e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855`,
+  ewfacquire: `ewfacquire 20230405\nExaminer Name: Dr. Ananya Rao (FSL Bengaluru)\nAcquisition started at: 2026-11-24 10:05:00 IST (UTC+05:30)\nAcquisition completed at: 2026-11-24 04:20:00 UTC\nMedia Type: Fixed Disk (Samsung EVO 512GB)\nNOTE: Device RTC was 15 minutes behind network time.`,
+  officer_notes: `Seizure Memo — Synthetic Case #2026-DEL-07\nNote: Shop manager first sent a copy of the video over WhatsApp to IO phone at 11:45 AM before pen drive was sealed.\nSealed pen drive was kept in station malkhana; handed over to FSL courier at 16:30 PM IST (4h 45m gap with no intermediate log entry).`,
+}
 
 interface Props {
   cases: CaseItem[]
@@ -51,6 +59,7 @@ export function ExpertDesktopView({
   const [signedCert, setSignedCert] = useState<{ cert_id: string; pdf_sha256: string; signed_at_utc: string } | null>(null)
   const [signing, setSigning] = useState(false)
   const [loading, setLoading] = useState(false)
+  const [copiedHash, setCopiedHash] = useState(false)
 
   useEffect(() => {
     if (!selectedCaseId) {
@@ -188,9 +197,21 @@ export function ExpertDesktopView({
                       {loading ? 'VERIFYING...' : verify?.valid ? 'CHAIN VALID' : 'TAMPER DETECTED'}
                     </span>
                   </div>
-                  <p className="mt-1 font-mono text-[11px] text-zinc-400">
-                    SHA-256: {activeAsset.sha256}
-                  </p>
+                  <div className="mt-1 flex items-center gap-2 font-mono text-[11px] text-zinc-400">
+                    <span className="truncate">SHA-256: {activeAsset.sha256}</span>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        void navigator.clipboard.writeText(activeAsset.sha256)
+                        setCopiedHash(true)
+                        setTimeout(() => setCopiedHash(false), 1500)
+                      }}
+                      className="rounded border border-zinc-700 bg-zinc-900 px-1.5 py-0.5 text-[10px] text-zinc-300 hover:text-white"
+                      title="Copy SHA-256"
+                    >
+                      {copiedHash ? <Check className="h-3 w-3 text-emerald-400" /> : <Copy className="h-3 w-3" />}
+                    </button>
+                  </div>
                   <p className="font-mono text-[11px] text-zinc-500">
                     BLAKE3: {activeAsset.blake3}
                   </p>
@@ -313,6 +334,20 @@ export function ExpertDesktopView({
                   />
                   Notify Expert via n8n
                 </label>
+              </div>
+
+              <div className="flex flex-wrap items-center gap-1.5 text-[11px]">
+                <span className="text-zinc-500">Load sample log:</span>
+                {Object.entries(SAMPLE_LOGS).map(([key, val]) => (
+                  <button
+                    key={key}
+                    type="button"
+                    onClick={() => setLogText(val)}
+                    className="rounded-md border border-zinc-700 bg-zinc-950 px-2 py-0.5 font-mono text-[10px] text-zinc-300 hover:border-emerald-500/50 hover:text-emerald-300"
+                  >
+                    {key}
+                  </button>
+                ))}
               </div>
 
               <textarea
