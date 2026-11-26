@@ -67,11 +67,11 @@ attesta/
 
 ## Quickstart
 
-### Option 1: Docker (1 Command)
+### Option 1: Docker (1 Command, from repo root)
 ```bash
 cp .env.example .env   # optional: add GEMINI_API_KEY, OLOSTEP_API_KEY, N8N_WEBHOOK_URL
 docker compose up --build
-# Web PWA: http://localhost:5173  |  API: http://localhost:8000/api/health
+# Web PWA: http://localhost:5174  |  API: http://localhost:8001/api/health
 ```
 
 ### Option 2: Local Dev & Tests

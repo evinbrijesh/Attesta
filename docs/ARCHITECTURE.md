@@ -31,10 +31,8 @@ flowchart TD
     end
 
     subgraph APPROVAL ["⚡ Automation & Human-in-the-Loop"]
-        D -->|"Webhook"| N8N[n8n Workflow]
-        N8N -->|"MCP Card"| OPS[Bitsbee Ops Mobile]
+        D -->|"Optional Webhook"| N8N["n8n Workflow (Telegram Alert)"]
         D -->|"Desktop Preview"| EXP[Human Expert Sign-Off]
-        OPS --> EXP
     end
 
     subgraph EXPORT ["📦 Court-Ready Output & Zero-Trust Verify"]
@@ -78,7 +76,7 @@ Exported `.zip` archives are self-contained and require **zero network access or
 ├── evidence/<filename>      # Raw original evidence bytes
 ├── custody_log.jsonl        # Ordered JSONL of all custody_events
 ├── manifest.json            # Case metadata, asset digests, head_event_hash
-├── certificate_s63.pdf      # (Added in Day 5) Signed BSA Section 63(4) Part A + B PDF
+├── certificate_s63.pdf      # (Optional; added when signed via /sign-s63, Day 7) BSA S.63(4) PDF
 └── sha256sums.txt           # SHA-256 checksums of all bundle entries
 ```
 
@@ -111,3 +109,12 @@ The standalone `attesta-verify` CLI (`packages/verify-coc`) checks:
 | `GET` | `/api/legal/section63` | BSA Section 63(4) reference (Olostep live + local cache) | Implemented |
 | `POST` | `/api/assets/{asset_id}/sign-s63` | Human expert sign-off & Section 63(4) PDF generation | Implemented |
 | `GET` | `/api/assets/{asset_id}/certificate.pdf` | Download signed Section 63(4) Part A + B PDF | Implemented |
+
+---
+
+## 6. Runtime Ports & Deployment Topology
+
+- **Docker Compose (`docker-compose.yml`, run from repo root):**
+  - `web` (`nginx:1.27-alpine`): Exposed on host **`http://localhost:5174`** (`5174:80`); serves the built Vite SPA and proxies `/api/` to `http://api:8000/api/` (`client_max_body_size 100M`).
+  - `api` (`python:3.13-slim` + `uv`): Exposed on host **`http://localhost:8001`** (`8001:8000`); persists SQLite & evidence files to the `attesta_data` volume (`/app/data`).
+- **Local Dev Mode:** Vite dev server runs on **`http://localhost:5173`** (`apps/web/vite.config.ts`) and proxies `/api` to Uvicorn on **`http://127.0.0.1:8000`**.

@@ -3,7 +3,7 @@
 **Product:** Attesta (*"Attested. Verified. Sealed."*)  
 **Track:** Homingo Hackathon · Edition 01 — **Automation** (Bring Your Own Problem)  
 **Target Jurisdiction:** India — **Bharatiya Sakshya Adhiniyam (BSA), 2023 · Section 63(4)**  
-**Status:** Day 1 Core Complete (`20/20` tests passing) · Building toward Dec 6, 2026 submission  
+**Status:** Days 1–9 Complete (`31/31` `pytest` tests passing; Docker & UI ready) · Building toward Dec 6, 2026 submission  
 
 ---
 
@@ -50,25 +50,24 @@ Under India's **Bharatiya Sakshya Adhiniyam (BSA), Section 63** (effective 1 Jul
 - **Idempotent Evidence Intake:** Dual hashing (`SHA-256` + `BLAKE3`) deduplicated by `(case_id, sha256, blake3)`.
 - **Append-Only Custody Ledger:** SQLite WAL-mode with `BEFORE UPDATE` and `BEFORE DELETE` triggers blocking any mutation of `custody_events`.
 - **Hash-Chained & Signed Events:** Each event binds `prev_hash` + canonical JSON payload into `event_hash` and signs with `Ed25519`.
-- **Tamper-Evident Bundle & Offline CLI:** Exports `evidence/`, `custody_log.jsonl`, `manifest.json`, `sha256sums.txt` in a `.zip` verified offline by `attesta-verify`.
+- **Tamper-Evident Bundle & Offline CLI:** Exports `evidence/`, `custody_log.jsonl`, `manifest.json`, optional signed `certificate_s63.pdf`, and `sha256sums.txt` in a `.zip` verified offline by `attesta-verify`.
 
-### 4.2 Adaptive Mobile + Desktop UI (Day 2–3)
-- **Auto-detect + 1-Click View Switcher (`📱 Field Mobile` ⇄ `🖥️ Expert Desktop`):**
-  - Mobile view: Evidence intake with client-side WebCrypto `SHA-256` before upload, QR code handoff token, Part A custodian declaration form.
-  - Desktop view: Case timeline, AI audit findings panel, TRACE advisory metadata drawer, side-by-side Part A + Part B Section 63(4) preview, human expert sign-off, and `.zip` download.
+### 4.2 Adaptive Mobile + Desktop UI (Implemented — Days 3–4, Polished Day 9)
+- **Auto-detect + 1-Click View Switcher (`Field Mobile` ⇄ `Expert Desktop`):**
+  - Mobile view: Case creation/selection, evidence intake with client-side WebCrypto `SHA-256` before upload, Part A custodian/location/context capture, QR code handoff token, and post-seal custody handoff logging.
+  - Desktop view: Editorial Forensic Dossier workspace with case/asset browser, Ed25519 custody timeline, TRACE advisory metadata panel, AI log audit trigger, side-by-side Part A + Part B Section 63(4) preview/editor, human expert sign-off & PDF download, and `.zip` export.
 
-### 4.3 AI Audit Agent (Day 4–5)
-- **Log Parser:** Extracts structured acquisition metadata from 5 formats (`dd` logs, `ewfacquire`, Autopsy/SleuthKit summaries, EXIF/media dumps, and free-text officer notes).
-- **Deterministic + LLM Anomaly Auditor:** Flags missing handoffs, chronological inversions, UTC vs. IST timezone mismatches, and hash discrepancies.
-- **Grounded Section 63(4) Drafter:** Produces Part A & Part B technical descriptions where every factual sentence cites an `[event:evt_...]` or `[hash:...]` identifier.
-- **Advisory Media Forensics (from TRACE):** Extracts EXIF/device metadata and flags potential recompression/manipulation anomalies as *Advisory Only* (never auto-rejects evidence).
+### 4.3 AI Audit Agent, TRACE & Section 63(4) PDF (Implemented — Days 2, 5–7)
+- **Log Parser:** Extracts structured acquisition metadata from 5 formats (`dd` logs, `ewfacquire`, Autopsy summaries, ExifTool JSON dumps, and free-text officer notes).
+- **Deterministic + LLM Anomaly Auditor:** Flags chronological inversions, custody gaps (> 2h), UTC vs. IST timezone mismatches, RTC clock skew, WhatsApp re-encoding risk, and hash discrepancies (`Gemini` / `Ollama` / deterministic grounded fallback).
+- **Grounded Section 63(4) Drafter & PDF Generator:** Produces Part A & Part B technical descriptions citing `[event:evt_...]` or `[hash:...]` identifiers, and renders an official Section 63(4) PDF (`ReportLab`) upon human sign-off.
+- **Advisory Media Forensics (TRACE):** Extracts EXIF/dimension metadata and ELA mean difference, flagging potential anomalies as *Advisory Only* (`advisory_only: true`; never auto-rejects evidence).
 
-### 4.4 Sponsor Integrations (Natural Fit, Zero Bloat)
-- **n8n:** Event-driven workflow webhook triggered on Part A submission → routes case notification to expert → archives manifest on Part B sign-off.
-- **Bitsbee Ops:** MCP-native mobile decision card pushed to the forensic expert's phone for 1-tap Part B review/approval.
-- **Olostep:** Legal reference grounding—fetches current BSA Section 63 statutory text and Supreme Court/High Court practice circulars for the expert reference drawer.
-- **Keploy:** Automated API regression recording & replay across `/ingest`, `/handoff`, `/audit`, and `/bundle` endpoints.
-- **Bitsbee Tree:** Public launch hub with QR code linking demo video, GitHub repo, live app, and `attesta-verify` CLI.
+### 4.4 Sponsor Integrations
+- **n8n (Implemented):** Optional webhook triggered on Part A audit (`PART_A_SUBMITTED`) and Part B sign-off (`PART_B_SIGNED`) when `N8N_WEBHOOK_URL` is configured.
+- **Olostep (Implemented):** Legal reference grounding for the expert slide-over drawer (`GET /api/legal/section63`), supporting live scraping via `OLOSTEP_API_KEY` with a verified local cache fallback.
+- **Bitsbee Tree (Planned — Day 10):** Public launch hub with QR code linking demo video, GitHub repo, live app, and `attesta-verify` CLI.
+- **Bitsbee Ops & Keploy (Planned / Env Reserved):** `BITSBEE_OPS_WEBHOOK_URL` is reserved in `.env.example` (webhook dispatch not yet wired); Keploy API recording/replay is planned ahead of submission (API & offline verification currently covered by `31/31` `pytest` tests).
 
 ---
 
@@ -81,9 +80,9 @@ Under India's **Bharatiya Sakshya Adhiniyam (BSA), Section 63** (effective 1 Jul
 
 ## 6. Measurable Evidence & Evaluation Benchmarks
 
-To satisfy the Automation track's **Evidence** and **Reliability** criteria, Attesta will measure and report:
-1. **Certificate Prep Time:** Manual Word/Excel workflow vs. Attesta end-to-end time.
-2. **Byte-Level Tamper Detection:** 100 synthetic files with 1-byte flips → `%` caught by `attesta-verify` (Target: `100/100`).
-3. **Chain-Break Detection:** 50 synthetic cases (deleted events, swapped timestamps, forged signatures, broken `prev_hash`) → detection rate and false-positive rate.
-4. **Idempotency:** Re-ingesting identical evidence bytes returns the existing `asset_id` without duplicating custody events.
-5. **Log Parse Accuracy:** Structured extraction accuracy across 5 forensic log formats.
+Measured via [`apps/api/scripts/run_benchmarks.py`](../apps/api/scripts/run_benchmarks.py) and asserted in [`apps/api/tests/test_benchmarks.py`](../apps/api/tests/test_benchmarks.py) (full report in [`docs/BENCHMARKS.md`](BENCHMARKS.md)):
+1. **End-to-End Deterministic Latency:** `88.81 ms` (`ingest` → `handoff` → `audit` → `Section 63(4) PDF` → `.zip` export → `attesta-verify`, excluding optional network LLM calls).
+2. **Byte-Level Tamper Detection:** `100 / 100` single-byte flips caught offline by `attesta-verify` (`100.0%`).
+3. **Chain-Break Detection & False-Flag Rate:** `50 / 50` synthetic chain breaks caught across 5 break modes (`100.0%`); `0 / 50` clean-chain false flags (`0.0%`).
+4. **Idempotency:** `20 / 20` duplicate uploads returned existing `asset_id` with zero duplicate custody events (`100.0%`).
+5. **Log Parse Accuracy:** `5 / 5` synthetic forensic log formats parsed cleanly (`100.0%`).
