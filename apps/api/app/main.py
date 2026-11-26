@@ -60,7 +60,10 @@ class SignSection63Request(BaseModel):
 
 def _load_root_env() -> None:
     """Load key=value pairs from repo-root .env if not already in os.environ."""
-    env_path = Path(__file__).resolve().parents[3] / ".env"
+    parents = Path(__file__).resolve().parents
+    if len(parents) <= 3:
+        return
+    env_path = parents[3] / ".env"
     if not env_path.exists():
         return
     for raw_line in env_path.read_text(encoding="utf-8").splitlines():
